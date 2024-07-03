@@ -73,6 +73,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
+    //BOH
+    implementation("com.google.dagger:hilt-android:2.40.5")
+    kapt("com.google.dagger:hilt-android-compiler:2.40.5")
+
     // ROOM
     val room_version = "2.6.1"
 

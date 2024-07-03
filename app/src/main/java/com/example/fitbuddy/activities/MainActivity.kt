@@ -1,4 +1,4 @@
-package com.example.fitbuddy
+package com.example.fitbuddy.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

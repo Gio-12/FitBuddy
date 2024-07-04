@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.fitbuddy.db.FitBuddyDatabase
 import com.example.fitbuddy.dao.*
-import com.example.fitbuddy.db.FitBuddyRepository
+import com.example.fitbuddy.repository.FitBuddyRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

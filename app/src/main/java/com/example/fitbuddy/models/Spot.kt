@@ -17,6 +17,8 @@ import androidx.room.PrimaryKey
 data class Spot(
     @ColumnInfo(name = "user_username")
     var userUsername: String,
+    @ColumnInfo(name = "name")
+    var name: String,
     @ColumnInfo(name = "latitude")
     var latitude: Double,
     @ColumnInfo(name = "longitude")
@@ -24,5 +26,5 @@ data class Spot(
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
-    constructor() : this("", 0.0, 0.0)
+    constructor() : this("","", 0.0, 0.0)
 }

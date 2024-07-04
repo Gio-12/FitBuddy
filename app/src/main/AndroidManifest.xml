@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -13,16 +14,33 @@
         android:theme="@style/Theme.FitBuddy"
         tools:targetApi="31">
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".activities.LoginActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.FitBuddy">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.example.fitbuddy.activities.MainActivity" />
+        <activity android:name="com.example.fitbuddy.activities.MenuActivity" />
+        <activity android:name="com.example.fitbuddy.activities.SignupActivity"/>
+<!--        <activity android:name="com.example.fitbuddy.activities.GeofenceActivity"/>-->
+<!--        <activity android:name="com.example.fitbuddy.activities.SpotActivity" />-->
+<!--        <activity android:name="com.example.fitbuddy.activities.ProfileActivity" />-->
+<!--        <activity android:name="com.example.fitbuddy.activities.GraphActivity" />-->
+<!--        <activity android:name="com.example.fitbuddy.activities.SearchActivity" />-->
+<!--        <receiver android:name="com.example.fitbuddy.geofence.GeofenceReceiver"-->
+<!--            android:enabled="true" />-->
+<!--        <service-->
+<!--            android:name="com.example.fitbuddy.services.ActionService"-->
+<!--            android:exported="false" />-->
+<!--        <service-->
+<!--            android:name="com.example.fitbuddy.services.GeofenceService"-->
+<!--            android:exported="false" />-->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_map_api_key" />
     </application>
 
 </manifest>

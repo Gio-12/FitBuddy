@@ -8,7 +8,7 @@ import com.example.fitbuddy.models.Action
 @Dao
 interface ActionDao {
     @Insert
-    suspend fun insert(action: Action)
+    suspend fun insert(action: Action) : Long
 
     @Update
     suspend fun update(action: Action)
@@ -20,5 +20,5 @@ interface ActionDao {
     suspend fun getActionsForUser(userUsername: String): List<Action>
 
     @Query("SELECT * FROM actions WHERE user_username = :username AND start_time BETWEEN :startTime AND :endTime")
-    fun getActionsForPeriod(username: String, startTime: Long, endTime: Long): List<Action>
+    suspend fun getActionsForPeriod(username: String, startTime: Long, endTime: Long): List<Action>
 }

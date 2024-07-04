@@ -31,7 +31,6 @@ data class Action(
     var endTime: Long
 ) {
     @PrimaryKey(autoGenerate = true)
-    @NonNull
     var id: Int = 0
     constructor() : this("", "", 0, 0L, 0L)
 }

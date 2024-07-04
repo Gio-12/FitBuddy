@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.kapt")
+    id("dagger.hilt.android.plugin")
 //    id("com.google.gms.google-services")
 }
 
@@ -61,6 +63,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.cardview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -70,29 +75,29 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Kotlin Standard Library
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.androidx.work.runtime.ktx)
 
-    //BOH
-    implementation("com.google.dagger:hilt-android:2.40.5")
-    kapt("com.google.dagger:hilt-android-compiler:2.40.5")
+    //DAGGER
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
 
     // ROOM
-    val room_version = "2.6.1"
+    val room = "2.6.1"
 
-    kapt("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
-    implementation("androidx.room:room-rxjava2:$room_version")
-    implementation("androidx.room:room-rxjava3:$room_version")
-    implementation("androidx.room:room-guava:$room_version")
-    testImplementation("androidx.room:room-testing:$room_version")
-    implementation("androidx.room:room-paging:$room_version")
+    kapt("androidx.room:room-compiler:$room")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.rxjava2)
+    implementation(libs.androidx.room.rxjava3)
+    implementation(libs.androidx.room.guava)
+    testImplementation(libs.androidx.room.testing)
+    implementation(libs.androidx.room.paging)
 
     // GMS GOOGLE
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.localbroadcastmanager)
 
     // Import the Firebase BoM
 //    implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
@@ -101,13 +106,17 @@ dependencies {
 //    implementation("com.google.firebase:firebase-database-ktx:20.3.0")
 
 //    // CHARTS
-//    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation(libs.mpandroidchart)
 
     //STEPS
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
-    implementation("androidx.activity:activity-compose")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.material:material")
+    implementation(platform(libs.androidx.compose.bom.v20231001))
+    implementation(libs.activity.compose)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.material)
+
+    //GLIDE GIF
+    implementation(libs.glide)
+    annotationProcessor (libs.compiler)
 }
 
 //apply(plugin = "com.google.gms.google-services")

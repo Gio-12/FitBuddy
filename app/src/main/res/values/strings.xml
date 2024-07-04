@@ -1,3 +1,21 @@
 <resources>
+<!--    MapAPI Key-->
+<!--    <string name="google_map_api_key" translatable="false">AIzaSyD1kNCQ3YXIlcoulGoBITB7rjiJCw0OLBQ</string>-->
+    <string name="google_map_api_key" translatable="false">AIzaSyANPtKILkEqdWrS1EipqR9VDjK4j6mybZM</string>
     <string name="app_name">FitBuddy</string>
+    <string name="logout">Logout</string>
+    <string name="home">Home</string>
+    <string name="geofence">Geofence</string>
+    <string name="spots">Spots</string>
+    <string name="charts">Charts</string>
+    <string name="profile">Profile</string>
+    <string name="search">Search</string>
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="register">Register</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="Welcome">Welcome\n</string>
+    <string name="already_have_an_account">Already have an account?</string>
 </resources>

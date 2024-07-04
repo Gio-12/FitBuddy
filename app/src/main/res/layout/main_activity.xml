@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.fitbuddy.activities.MainActivity">
+    <ImageView
+        android:id="@+id/image_activity"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_marginTop="0dp"
+        android:contentDescription="Activity Image" />
+
+    <TextView
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/image_activity"
+        android:layout_centerHorizontal="true"
+        android:textSize="24sp"
+        android:text="00:00:00"
+        android:layout_marginTop="20dp"/>
+
+    <Button
+        android:id="@+id/button_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/chronometer"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:text="Start" />
+
+    <Button
+        android:id="@+id/button_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/chronometer"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:text="Stop" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup_activities"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_start"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <RadioButton
+            android:id="@+id/radioButton_still"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Still" />
+
+        <RadioButton
+            android:id="@+id/radioButton_walking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Walking"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp" />
+
+        <RadioButton
+            android:id="@+id/radioButton_driving"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Driving" />
+    </RadioGroup>
+</RelativeLayout>

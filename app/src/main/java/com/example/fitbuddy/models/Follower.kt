@@ -28,9 +28,9 @@ import java.util.Date
 )
 @TypeConverters(DateConverter::class)
 data class Follower(
-    @ColumnInfo(name = "userId")
+    @ColumnInfo(name = "userFK")
     var userFK: String,
-    @ColumnInfo(name = "followerId")
+    @ColumnInfo(name = "followerFK")
     var followerFK: String,
     @ColumnInfo(name = "followedDate")
     var followedDate: Long

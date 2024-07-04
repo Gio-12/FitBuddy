@@ -16,10 +16,10 @@ import androidx.room.PrimaryKey
 )
 data class SpotLog(
     @ColumnInfo(name = "spot_id")
-    var locationId: Int,
+    var spotId: Int,
     @ColumnInfo(name = "date")
     var date: Long,
-    @ColumnInfo(name = "date")
+    @ColumnInfo(name = "entry")
     var entry: Boolean
 
 ) {

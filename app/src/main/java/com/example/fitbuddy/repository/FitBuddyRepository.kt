@@ -1,5 +1,7 @@
-package com.example.fitbuddy.db
+package com.example.fitbuddy.repository
 
+import androidx.room.Delete
+import androidx.room.Query
 import com.example.fitbuddy.dao.*
 import com.example.fitbuddy.models.*
 
@@ -10,23 +12,52 @@ class FitBuddyRepository(
     private val spotLogDao: SpotLogDao,
     private val userDao: UserDao
 ) {
-    suspend fun insertAction(action: Action) = actionDao.insert(action)
+
+    //ACTIONS
+    suspend fun insertAction(action: Action): Long {
+        return actionDao.insert(action)
+    }
+    suspend fun updateAction(action: Action) = actionDao.update(action)
+
+    suspend fun getActivityById(actionId: Long) = actionDao.getActivityById(actionId)
 
     suspend fun getActionsForUser(userUsername: String) = actionDao.getActionsForUser(userUsername)
+
+//    suspend fun getActionsForPeriod(username: String, startTime: Long, endTime: Long) = actionDao.getActionsForPeriod(username, startTime, endTime)
+
+    //FOLLOWERS
 
     suspend fun insertFollower(follower: Follower) = followerDao.insert(follower)
 
     suspend fun getFollowersForUser(userFK: String) = followerDao.getFollowersForUser(userFK)
 
+    //SPOTS
+
     suspend fun insertSpot(spot: Spot) = spotDao.insert(spot)
 
     suspend fun getSpotsForUser(userUsername: String) = spotDao.getSpotsForUser(userUsername)
+
+    //SPOTS LOGS
 
     suspend fun insertSpotLog(spotLog: SpotLog) = spotLogDao.insert(spotLog)
 
     suspend fun getLogsForSpot(spotId: Int) = spotLogDao.getLogsForSpot(spotId)
 
+    //USERS
+
     suspend fun insertUser(user: User) = userDao.insert(user)
 
+    suspend fun updateUser(user: User) = userDao.update(user)
+
     suspend fun getUserByUsername(username: String) = userDao.getUserByUsername(username)
+
+    suspend fun getUserWithPassword(username: String, password: String): User? {
+        return userDao.getUserWithPassword(username, password)
+    }
+
+    suspend fun getAllUsers(): List<User> {
+        return userDao.getAllUsers()
+    }
+
+    suspend fun delete(user: User)  = userDao.delete(user)
 }

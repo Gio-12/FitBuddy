@@ -1,7 +1,5 @@
 package com.example.fitbuddy.repository
 
-import androidx.room.Delete
-import androidx.room.Query
 import com.example.fitbuddy.dao.*
 import com.example.fitbuddy.models.*
 
@@ -19,7 +17,7 @@ class FitBuddyRepository(
     }
     suspend fun updateAction(action: Action) = actionDao.update(action)
 
-    suspend fun getActivityById(actionId: Long) = actionDao.getActivityById(actionId)
+    suspend fun getActionById(actionId: Long) = actionDao.getActivityById(actionId)
 
     suspend fun getActionsForUser(userUsername: String) = actionDao.getActionsForUser(userUsername)
 
@@ -33,9 +31,13 @@ class FitBuddyRepository(
 
     //SPOTS
 
-    suspend fun insertSpot(spot: Spot) = spotDao.insert(spot)
+    suspend fun insertSpot(spot: Spot): Long {
+        return spotDao.insert(spot)
+    }
 
-    suspend fun getSpotsForUser(userUsername: String) = spotDao.getSpotsForUser(userUsername)
+    suspend fun getSpotsForUser(userUsername: String): List<Spot> {
+        return spotDao.getSpotsForUser(userUsername)
+    }
 
     //SPOTS LOGS
 

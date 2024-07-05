@@ -9,7 +9,7 @@ import com.example.fitbuddy.models.Spot
 @Dao
 interface SpotDao {
     @Insert
-    suspend fun insert(spot: Spot)
+    suspend fun insert(spot: Spot): Long
 
     @Delete
     suspend fun deleteLocation(spot: Spot)

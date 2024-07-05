@@ -11,10 +11,6 @@ import com.example.fitbuddy.activities.MainActivity
 
 open class MenuActivity : AppCompatActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_navbar, menu)
         return true

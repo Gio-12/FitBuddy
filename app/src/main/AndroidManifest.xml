@@ -2,6 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BACKGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
+        tools:ignore="ScopedStorage" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -25,19 +38,20 @@
         <activity android:name="com.example.fitbuddy.activities.MainActivity" />
         <activity android:name="com.example.fitbuddy.activities.MenuActivity" />
         <activity android:name="com.example.fitbuddy.activities.SignupActivity"/>
-<!--        <activity android:name="com.example.fitbuddy.activities.GeofenceActivity"/>-->
+        <activity android:name="com.example.fitbuddy.activities.GeofenceActivity"/>
 <!--        <activity android:name="com.example.fitbuddy.activities.SpotActivity" />-->
 <!--        <activity android:name="com.example.fitbuddy.activities.ProfileActivity" />-->
 <!--        <activity android:name="com.example.fitbuddy.activities.GraphActivity" />-->
 <!--        <activity android:name="com.example.fitbuddy.activities.SearchActivity" />-->
-<!--        <receiver android:name="com.example.fitbuddy.geofence.GeofenceReceiver"-->
-<!--            android:enabled="true" />-->
-<!--        <service-->
-<!--            android:name="com.example.fitbuddy.services.ActionService"-->
-<!--            android:exported="false" />-->
-<!--        <service-->
-<!--            android:name="com.example.fitbuddy.services.GeofenceService"-->
-<!--            android:exported="false" />-->
+        <receiver android:name="com.example.fitbuddy.geofence.GeofenceReceiver"
+            android:enabled="true" />
+        <service
+            android:name="com.example.fitbuddy.services.ActionService"
+            android:exported="false" />
+        <service
+            android:name="com.example.fitbuddy.services.GeofenceService"
+            android:exported="false"
+            tools:ignore="Instantiatable" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_map_api_key" />

@@ -6,6 +6,8 @@
     <string name="logout">Logout</string>
     <string name="home">Home</string>
     <string name="geofence">Geofence</string>
+    <string name="channel_name">Geofence Notify</string>
+    <string name="channel_description">Reminders of geofence</string>
     <string name="spots">Spots</string>
     <string name="charts">Charts</string>
     <string name="profile">Profile</string>

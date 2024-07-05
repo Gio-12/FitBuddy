@@ -1,5 +1,6 @@
 package com.example.fitbuddy.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitbuddy.repository.FitBuddyRepository
@@ -16,21 +17,42 @@ class FitBuddyViewModel @Inject constructor(
 ) : ViewModel() {
 
     //ACTIONS
+    private val TAG = "FitBuddyViewModel"
 
     suspend fun insertAction(action: Action): Long {
         return withContext(Dispatchers.IO) {
-            repository.insertAction(action)
+            try {
+                val actionId = repository.insertAction(action)
+                Log.d(TAG, "Action saved to database: $actionId")
+                actionId
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving action to database", e)
+                -1L
+            }
         }
     }
 
     suspend fun updateAction(action: Action) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.updateAction(action)
         }
     }
 
+    suspend fun getActionById(actionId: Long): Action? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val action = repository.getActionById(actionId)
+                Log.d(TAG, "Action retrieved from database: $actionId")
+                action
+            } catch (e: Exception) {
+                Log.e(TAG, "Error retrieving action from database", e)
+                null
+            }
+        }
+    }
+
     suspend fun getActionsForUser(userUsername: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getActionsForUser(userUsername)
         }
     }
@@ -38,41 +60,55 @@ class FitBuddyViewModel @Inject constructor(
     //FOLLOWER
 
     suspend fun insertFollower(follower: Follower) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.insertFollower(follower)
         }
     }
 
     suspend fun getFollowersForUser(userFK: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getFollowersForUser(userFK)
         }
     }
 
     //SPOT
 
-    suspend fun insertSpot(spot: Spot) {
-        viewModelScope.launch {
-            repository.insertSpot(spot)
+    suspend fun insertSpot(spot: Spot) : Long {
+        return withContext(Dispatchers.IO) {
+            try {
+                val spotId = repository.insertSpot(spot)
+                Log.d(TAG, "Spot saved to database: $spotId")
+                spotId
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving spot to database", e)
+                -1
+            }
         }
     }
 
-    suspend fun getSpotsForUser(userUsername: String) {
-        viewModelScope.launch {
-            repository.getSpotsForUser(userUsername)
+    suspend fun getSpotsForUser(userUsername: String) : List<Spot> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val spots = repository.getSpotsForUser(userUsername)
+                Log.d(TAG, "Spots retrieved")
+                spots
+            } catch (e: Exception) {
+                Log.e(TAG, "Error retrieving spots from database", e)
+                emptyList<Spot>()
+            }
         }
     }
 
     //SPOTS LOGS
 
     suspend fun insertSpotLog(spotLog: SpotLog) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.insertSpotLog(spotLog)
         }
     }
 
     suspend fun getLogsForSpot(spotId: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getLogsForSpot(spotId)
         }
     }
@@ -80,7 +116,7 @@ class FitBuddyViewModel @Inject constructor(
     //USER
 
     suspend fun insertUser(user: User) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.insertUser(user)
         }
     }
@@ -104,7 +140,7 @@ class FitBuddyViewModel @Inject constructor(
     }
 
     suspend fun delete(user: User) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.delete(user)
         }
     }

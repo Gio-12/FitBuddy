@@ -2,6 +2,7 @@ package com.example.fitbuddy.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.fitbuddy.dao.ActionDao
 import com.example.fitbuddy.dao.FollowerDao
 import com.example.fitbuddy.dao.SpotDao
@@ -12,8 +13,10 @@ import com.example.fitbuddy.models.Action
 import com.example.fitbuddy.models.Follower
 import com.example.fitbuddy.models.Spot
 import com.example.fitbuddy.models.SpotLog
+import com.example.fitbuddy.utils.DateConverter
 
 @Database(entities = [User::class, Action::class, Follower::class, Spot::class, SpotLog::class], version = 1, exportSchema = false)
+@TypeConverters(DateConverter::class)
 abstract class FitBuddyDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun actionDao(): ActionDao

@@ -12,6 +12,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -30,12 +31,16 @@ import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class GeofenceService : Service() {
+
+    private val TAG = "GeofenceServiceActivity"
 
     private lateinit var geofencingClient: GeofencingClient
     private lateinit var viewModel: FitBuddyViewModel
@@ -45,15 +50,15 @@ class GeofenceService : Service() {
     lateinit var repository: FitBuddyRepository
 
     override fun onCreate() {
+        Log.e(TAG, "OnCreateService")
         super.onCreate()
-
         geofencingClient = LocationServices.getGeofencingClient(this)
 
         val factory = FitBuddyViewModelFactory(repository)
         viewModel = ViewModelProvider(viewModelStore, factory)[FitBuddyViewModel::class.java]
 
+//        monitorGeofences()
         startForegroundService()
-        monitorGeofences()
     }
 
     @SuppressLint("ForegroundServiceType")
@@ -78,22 +83,33 @@ class GeofenceService : Service() {
         startForeground(1, notification)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun monitorGeofences() {
-        viewModel.viewModelScope.launch(Dispatchers.IO) {
+        GlobalScope.launch(Dispatchers.IO)  {
             val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
             val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
-            val locations = viewModel.getSpotsForUser(username)
+            val spots = viewModel.getSpotsForUser(username)
 
-            for (location in locations) {
-                createGeofence(location.id, LatLng(location.latitude, location.longitude))
-            }
+            // Clear existing geofences to avoid duplicates
+//            geofencingClient.removeGeofences(getGeofencePendingIntent()).run {
+//                addOnSuccessListener {
+//                    println("Existing geofences removed")
+//                    // Add new geofences
+                    for (spot in spots) {
+                        createGeofence(spot.id, LatLng(spot.latitude, spot.longitude))
+                    }
+//                }
+//                addOnFailureListener { e ->
+//                    println("Failed to remove existing geofences: ${e.message}")
+//                }
+//            }
         }
     }
 
-    private fun createGeofence(locationId: Int, location: LatLng) {
+    private fun createGeofence(spotId: Int, spot: LatLng) {
         val geofence = Geofence.Builder()
-            .setRequestId(locationId.toString())
-            .setCircularRegion(location.latitude, location.longitude, 100f)
+            .setRequestId(spotId.toString())
+            .setCircularRegion(spot.latitude, spot.longitude, 100f)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
             .build()
@@ -103,24 +119,31 @@ class GeofenceService : Service() {
             .addGeofence(geofence)
             .build()
 
-        val intent = Intent(this, GeofenceReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-        )
+        val pendingIntent = getGeofencePendingIntent()
 
+        // Check for necessary permissions before adding geofences
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             geofencingClient.addGeofences(geofenceRequest, pendingIntent).run {
-                addOnSuccessListener { println("Geofence added for locationId: $locationId") }
-                addOnFailureListener { e -> println("Geofence addition failed for locationId: $locationId with error: ${e.message}") }
+                addOnSuccessListener { println("Geofence added for spotId: $spotId") }
+                addOnFailureListener { e -> println("Geofence addition failed for spotId: $spotId with error: ${e.message}") }
             }
         } else {
             println("Required permissions are not granted for geofences.")
         }
     }
 
+
+    private fun getGeofencePendingIntent(): PendingIntent {
+        val intent = Intent(this, GeofenceReceiver::class.java)
+        return PendingIntent.getBroadcast(
+            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        monitorGeofences()
+        Log.e(TAG, "OnStartService") // Call monitorGeofences() here to handle service restarts
+        monitorGeofences(); // Ensures geofences are monitored on service start
         return START_STICKY
     }
 
@@ -129,6 +152,7 @@ class GeofenceService : Service() {
     }
 
     override fun onDestroy() {
+        Log.e(TAG, "OnDestroyService")
         super.onDestroy()
         stopForeground(true)
         viewModelStore.clear()

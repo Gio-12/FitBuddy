@@ -1,6 +1,8 @@
 package com.example.fitbuddy.db
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.fitbuddy.dao.ActionDao
@@ -23,4 +25,26 @@ abstract class FitBuddyDatabase : RoomDatabase() {
     abstract fun followerDao(): FollowerDao
     abstract fun spotDao(): SpotDao
     abstract fun spotLogDao(): SpotLogDao
+
+
+    companion object {
+        @Volatile
+        private var INSTANCE: FitBuddyDatabase? = null
+
+        fun getDatabase(context: Context): FitBuddyDatabase {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
+            }
+            synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    FitBuddyDatabase::class.java,
+                    "fitbuddy_database"
+                ).build()
+                INSTANCE = instance
+                return instance
+            }
+        }
+    }
 }

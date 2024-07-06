@@ -25,6 +25,7 @@ import com.example.fitbuddy.utils.GEOFENCE_RADIUS
 import com.example.fitbuddy.utils.KEY_USERNAME
 import com.example.fitbuddy.utils.LOCATION_REQUEST_CODE
 import com.example.fitbuddy.utils.SHARED_PREFS_NAME
+import com.example.fitbuddy.utils.WRITE_EXTERNAL_STORAGE_REQUEST_CODE
 import com.example.fitbuddy.viewmodel.FitBuddyViewModel
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
@@ -48,6 +49,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
     //VIEWMODEL
     private val viewModel: FitBuddyViewModel by viewModels()
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.geofence_activity)
@@ -58,6 +60,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        checkAndRequestPermissions()
     }
 
     companion object {
@@ -96,7 +99,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapLongClickListener { latLng ->
             addMarkerAndCircle(latLng)
-            saveLocationAndCreateGeofence(latLng)
+            saveSpotAndCreateGeofence(latLng)
         }
     }
 
@@ -112,14 +115,14 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
     }
 
-    private fun saveLocationAndCreateGeofence(latLng: LatLng) {
+    private fun saveSpotAndCreateGeofence(latLng: LatLng) {
         val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
 
         lifecycleScope.launch {
             val spot = Spot(username, "",latLng.latitude, latLng.longitude)
-            val locationId = viewModel.insertSpot(spot).toInt()
-            createGeofence(locationId, latLng)
+            val spotId = viewModel.insertSpot(spot).toInt()
+            createGeofence(spotId, latLng)
         }
     }
 
@@ -227,5 +230,39 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
     override fun onBackPressed() {
         super.onBackPressed()
         moveTaskToBack(true)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun checkAndRequestPermissions() {
+        val permissions = mutableListOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        )
+
+        val permissionsToRequest = permissions.filter {
+            ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toTypedArray(), WRITE_EXTERNAL_STORAGE_REQUEST_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == WRITE_EXTERNAL_STORAGE_REQUEST_CODE) {
+            for (i in permissions.indices) {
+                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "${permissions[i]} permission granted")
+                } else {
+                    Log.e(TAG, "${permissions[i]} permission denied")
+                }
+            }
+        }
     }
 }

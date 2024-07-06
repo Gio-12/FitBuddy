@@ -9,33 +9,29 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.fitbuddy.R
 import com.example.fitbuddy.activities.GeofenceActivity
 import com.example.fitbuddy.dao.SpotLogDao
+import com.example.fitbuddy.db.FitBuddyDatabase
 import com.example.fitbuddy.models.SpotLog
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import kotlinx.coroutines.withContext
+
 
 
 class GeofenceReceiver : BroadcastReceiver() {
-
-
-    lateinit var spotLogDao: SpotLogDao
+//    private lateinit var spotLogDao: SpotLogDao
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (context != null) {
-            val geofencingEvent = intent?.let { GeofencingEvent.fromIntent(it) }
-            if (geofencingEvent != null) {
-                if (geofencingEvent.hasError()) {
-                    Log.e("GeofenceReceiver", "Error: ${geofencingEvent.errorCode}")
-                    return
-                }
-
+        if (context != null && intent != null) {
+            val geofencingEvent = intent.let { GeofencingEvent.fromIntent(it) }
+            if (geofencingEvent != null && !geofencingEvent.hasError()) {
                 val geofenceTransition = geofencingEvent.geofenceTransition
                 if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER || geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
                     val triggeringGeofences = geofencingEvent.triggeringGeofences
@@ -43,10 +39,12 @@ class GeofenceReceiver : BroadcastReceiver() {
                         for (geofence in triggeringGeofences) {
                             val spotId = geofence.requestId.toInt()
                             sendNotification(context, spotId, geofenceTransition)
-                            saveSpotLog(spotId, geofenceTransition)
+                            saveSpotLog(context, spotId, geofenceTransition)
                         }
                     }
                 }
+            } else {
+                Log.e("GeofenceReceiver", "Error: ${geofencingEvent?.errorCode}")
             }
         }
     }
@@ -70,15 +68,23 @@ class GeofenceReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun saveSpotLog(spotId: Int, transitionType: Int) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val entry = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
-            val spotLog = SpotLog(spotId = spotId, date = System.currentTimeMillis(), entry = entry)
-            try {
-                spotLogDao.insert(spotLog)
-                Log.d("GeofenceReceiver", "SpotLog recorded: $spotLog")
-            } catch (e: Exception) {
-                Log.e("GeofenceReceiver", "Error inserting SpotLog: ${e.message}")
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun saveSpotLog(context: Context, spotId: Int, transitionType: Int) {
+        GlobalScope.launch(Dispatchers.IO) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                val spotLogDao = FitBuddyDatabase.getDatabase(context).spotLogDao()
+                val entry = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
+                val spotLog = SpotLog(spotId = spotId, date = System.currentTimeMillis(), entry = entry)
+                try {
+                    spotLogDao.insert(spotLog)
+                    withContext(Dispatchers.Main) {
+                        Log.d("GeofenceReceiver", "SpotLog recorded: $spotLog")
+                    }
+                } catch (e: Exception) {
+                    Log.e("GeofenceReceiver", "Error inserting SpotLog: ${e.message}")
+                }
+            } else {
+                Log.e("GeofenceReceiver", "Write permission not granted")
             }
         }
     }

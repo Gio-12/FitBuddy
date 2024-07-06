@@ -43,8 +43,15 @@
 <!--        <activity android:name="com.example.fitbuddy.activities.ProfileActivity" />-->
 <!--        <activity android:name="com.example.fitbuddy.activities.GraphActivity" />-->
 <!--        <activity android:name="com.example.fitbuddy.activities.SearchActivity" />-->
-        <receiver android:name="com.example.fitbuddy.geofence.GeofenceReceiver"
-            android:enabled="true" />
+        <receiver
+            android:name=".geofence.GeofenceReceiver"
+            android:enabled="true"/>
+<!--            android:exported="false">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.google.android.gms.location.GeofenceEvent" />-->
+<!--                <action android:name="com.google.android.gms.location.GeofenceTransitionsIntentService.ACTION_PROCESS_UPDATES"/>-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
         <service
             android:name="com.example.fitbuddy.services.ActionService"
             android:exported="false" />

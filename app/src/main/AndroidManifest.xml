@@ -43,22 +43,29 @@
 <!--        <activity android:name="com.example.fitbuddy.activities.ProfileActivity" />-->
 <!--        <activity android:name="com.example.fitbuddy.activities.GraphActivity" />-->
 <!--        <activity android:name="com.example.fitbuddy.activities.SearchActivity" />-->
+<!--        <receiver-->
+<!--            android:name=".geofence.GeofenceReceiver"-->
+<!--            android:enabled="true"/>-->
+<!--        <service-->
+<!--            android:name="com.example.fitbuddy.services.GeofenceService"-->
+<!--            android:exported="false" />-->
+        <service
+            android:name="com.example.fitbuddy.services.GeofenceService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="location" />
+
         <receiver
-            android:name=".geofence.GeofenceReceiver"
-            android:enabled="true"/>
-<!--            android:exported="false">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="com.google.android.gms.location.GeofenceEvent" />-->
-<!--                <action android:name="com.google.android.gms.location.GeofenceTransitionsIntentService.ACTION_PROCESS_UPDATES"/>-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+            android:name="com.example.fitbuddy.geofence.GeofenceReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.ACTION_RECEIVE_GEOFENCE" />
+            </intent-filter>
+        </receiver>
         <service
             android:name="com.example.fitbuddy.services.ActionService"
             android:exported="false" />
-        <service
-            android:name="com.example.fitbuddy.services.GeofenceService"
-            android:exported="false"
-            tools:ignore="Instantiatable" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_map_api_key" />

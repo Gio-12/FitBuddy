@@ -1,5 +1,6 @@
 package com.example.fitbuddy.activities
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -7,17 +8,20 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView // Import correct SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.fitbuddy.R
 import com.example.fitbuddy.models.Action
 import com.example.fitbuddy.repository.FitBuddyRepository
+import com.example.fitbuddy.utils.KEY_USERNAME
+import com.example.fitbuddy.utils.SHARED_PREFS_NAME
 import com.example.fitbuddy.viewmodel.FitBuddyViewModel
 import com.example.fitbuddy.viewmodel.FitBuddyViewModelFactory
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.utils.ColorTemplate
+import com.github.mikephil.charting.formatter.PercentFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.*
@@ -43,7 +47,10 @@ class ChartActivity : MenuActivity() {
         setContentView(R.layout.chart_activity)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        username = intent.getStringExtra("username") ?: ""
+        val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        val defaultUsername = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
+
+        username = intent.getStringExtra("username") ?: defaultUsername
 
         val factory = FitBuddyViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[FitBuddyViewModel::class.java]
@@ -110,8 +117,13 @@ class ChartActivity : MenuActivity() {
         }
 
         val dataSet = PieDataSet(entries, "Activity Distribution")
+        dataSet.colors = ColorTemplate.MATERIAL_COLORS.asList() // Set different colors
+        dataSet.valueTextSize = 14f // Increase value text size
+        dataSet.valueFormatter = PercentFormatter(activityPieChart) // Format values as percentages
+
         val data = PieData(dataSet)
         activityPieChart.data = data
+        activityPieChart.setEntryLabelTextSize(14f) // Increase entry label text size
         activityPieChart.invalidate() // Refresh the chart
     }
 
@@ -121,7 +133,7 @@ class ChartActivity : MenuActivity() {
             val calendar = Calendar.getInstance().apply { timeInMillis = action.startTime }
             calendar.get(Calendar.DAY_OF_YEAR)
         }.mapValues { entry ->
-            entry.value.sumBy { it.steps }
+            entry.value.sumBy { it.steps }.coerceAtLeast(0) // Ensure steps are non-negative
         }
 
         val entries = stepsMap.map { (day, steps) ->
@@ -129,13 +141,15 @@ class ChartActivity : MenuActivity() {
         }
 
         val dataSet = LineDataSet(entries, "Daily Steps")
+        dataSet.colors = ColorTemplate.COLORFUL_COLORS.asList() // Set different colors
+
         val data = LineData(dataSet)
         stepsLineChart.data = data
         stepsLineChart.invalidate() // Refresh the chart
     }
 
     private fun updateTotals(actions: List<Action>) {
-        val totalSteps = actions.sumBy { it.steps }
+        val totalSteps = actions.sumBy { it.steps.coerceAtLeast(0) } // Ensure total steps are non-negative
         val totalSpots = actions.size
         totalStepsTextView.text = getString(R.string.total_steps, totalSteps)
         totalSpotsTextView.text = getString(R.string.total_spots, totalSpots)

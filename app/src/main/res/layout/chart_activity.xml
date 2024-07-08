@@ -83,7 +83,6 @@
                     android:text="@string/total_spots"
                     android:layout_marginStart="8dp" />
             </LinearLayout>
-
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

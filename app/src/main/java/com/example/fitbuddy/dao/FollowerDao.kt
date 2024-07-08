@@ -10,6 +10,9 @@ interface FollowerDao {
     @Insert
     suspend fun insert(follower: Follower)
 
+    @Query("DELETE FROM follower WHERE userFK = :username AND followerFK = :loggedUsername")
+    suspend fun removeFollowing(username: String, loggedUsername: String)
+
     @Query("SELECT followerFK FROM follower WHERE userFK = :userFK")
     suspend fun getFollowersForUser(userFK: String): List<String>
 

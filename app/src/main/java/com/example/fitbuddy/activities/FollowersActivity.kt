@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fitbuddy.R
 import com.example.fitbuddy.adapters.FollowersAdapter
 import com.example.fitbuddy.adapters.FollowingAdapter
+import com.example.fitbuddy.models.Follower
 import com.example.fitbuddy.repository.FitBuddyRepository
 import com.example.fitbuddy.utils.KEY_USERNAME
 import com.example.fitbuddy.utils.SHARED_PREFS_NAME
@@ -51,13 +52,23 @@ class FollowersActivity : MenuActivity() {
         followersRecyclerView = findViewById(R.id.recycler_view)
         followersRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        followersAdapter = FollowersAdapter { followerUsername ->
-            navigateToProfile(followerUsername)
-        }
+        followersAdapter = FollowersAdapter(
+            onProfileClick = { followerUsername ->
+                navigateToProfile(followerUsername)
+            },
+            onFollowClick = { followerUsername ->
+                addFollowing(followerUsername)
+            }
+        )
 
-        followingAdapter = FollowingAdapter { followingUsername ->
-            navigateToProfile(followingUsername)
-        }
+        followingAdapter = FollowingAdapter(
+            onProfileClick = { followingUsername ->
+                navigateToProfile(followingUsername)
+            },
+            onUnfollowClick = { followingUsername ->
+                removeFollowing(followingUsername)
+            }
+        )
 
         findViewById<SearchView>(R.id.search_view).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -126,5 +137,24 @@ class FollowersActivity : MenuActivity() {
         val intent = Intent(this, ProfileActivity::class.java)
         intent.putExtra("username", username)
         startActivity(intent)
+    }
+
+    private fun addFollowing(followerUsername: String) {
+        lifecycleScope.launch {
+            val follower = Follower(
+                userFK = followerUsername,
+                followerFK = username,
+                followedDate = System.currentTimeMillis()
+            )
+            viewModel.insertFollower(follower)
+            loadFollowing(this@FollowersActivity.username)
+        }
+    }
+
+    private fun removeFollowing(followingUsername: String) {
+        lifecycleScope.launch {
+            viewModel.removeFollowing(followingUsername, username)
+            loadFollowing(this@FollowersActivity.username)
+        }
     }
 }

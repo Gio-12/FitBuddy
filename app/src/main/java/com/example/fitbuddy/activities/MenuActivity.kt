@@ -41,7 +41,7 @@ open class MenuActivity : AppCompatActivity() {
                 true
             }
             R.id.action_mn_graphs -> {
-                navigateTo(GraphActivity::class.java)
+                navigateTo(ChartActivity::class.java)
                 true
             }
             R.id.action_logout -> {

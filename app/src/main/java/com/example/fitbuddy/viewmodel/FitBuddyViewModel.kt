@@ -57,11 +57,29 @@ class FitBuddyViewModel @Inject constructor(
         }
     }
 
+    suspend fun getActionsForPeriod(username: String, startTime: Long, endTime: Long) : List<Action>{
+        return withContext(Dispatchers.IO) {
+            try {
+                val action = repository.getActionsForPeriod(username, startTime, endTime)
+                Log.d(TAG, "Actions retrieved from database")
+                action
+            } catch (e: Exception) {
+                Log.e(TAG, "Error retrieving actions from database", e)
+                emptyList<Action>()
+            }
+        }
+    }
     //FOLLOWER
 
     suspend fun insertFollower(follower: Follower) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertFollower(follower)
+        }
+    }
+
+    fun removeFollowing(username: String, loggedUsername: String) {
+        viewModelScope.launch {
+            repository.removeFollowing(username, loggedUsername)
         }
     }
 
@@ -90,6 +108,7 @@ class FitBuddyViewModel @Inject constructor(
             }
         }
     }
+
 
 
     //SPOT
@@ -161,7 +180,11 @@ class FitBuddyViewModel @Inject constructor(
         }
     }
 
-    suspend fun getAllUsers(): List<User> {
+    suspend fun searchUsers(query: String): List<String> {
+        return repository.searchUsers(query)
+    }
+
+    suspend fun getAllUsers(): List<String> {
         return withContext(Dispatchers.IO) {
             repository.getAllUsers()
         }

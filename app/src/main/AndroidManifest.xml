@@ -41,15 +41,9 @@
         <activity android:name="com.example.fitbuddy.activities.GeofenceActivity"/>
         <activity android:name="com.example.fitbuddy.activities.SpotActivity" />
         <activity android:name="com.example.fitbuddy.activities.FollowersActivity" />
-<!--        <activity android:name="com.example.fitbuddy.activities.ProfileActivity" />-->
-<!--        <activity android:name="com.example.fitbuddy.activities.GraphActivity" />-->
-<!--        <activity android:name="com.example.fitbuddy.activities.SearchActivity" />-->
-<!--        <receiver-->
-<!--            android:name=".geofence.GeofenceReceiver"-->
-<!--            android:enabled="true"/>-->
-<!--        <service-->
-<!--            android:name="com.example.fitbuddy.services.GeofenceService"-->
-<!--            android:exported="false" />-->
+        <activity android:name="com.example.fitbuddy.activities.ProfileActivity" />
+        <activity android:name="com.example.fitbuddy.activities.ChartActivity" />
+        <activity android:name="com.example.fitbuddy.activities.SearchActivity" />
         <service
             android:name="com.example.fitbuddy.services.GeofenceService"
             android:enabled="true"

@@ -21,11 +21,13 @@ class FitBuddyRepository(
 
     suspend fun getActionsForUser(userUsername: String) = actionDao.getActionsForUser(userUsername)
 
-//    suspend fun getActionsForPeriod(username: String, startTime: Long, endTime: Long) = actionDao.getActionsForPeriod(username, startTime, endTime)
+    suspend fun getActionsForPeriod(username: String, startTime: Long, endTime: Long) = actionDao.getActionsForPeriod(username, startTime, endTime)
 
     //FOLLOWERS
 
     suspend fun insertFollower(follower: Follower) = followerDao.insert(follower)
+
+    suspend fun removeFollowing(username: String, loggedUsername: String) = followerDao.removeFollowing(username, loggedUsername)
 
     suspend fun getFollowersForUser(userFK: String): List<String> {
         return followerDao.getFollowersForUser(userFK)
@@ -62,7 +64,11 @@ class FitBuddyRepository(
         return userDao.getUserWithPassword(username, password)
     }
 
-    suspend fun getAllUsers(): List<User> {
+    suspend fun searchUsers(query: String): List<String> {
+        return userDao.searchUsers(query)
+    }
+
+    suspend fun getAllUsers(): List<String> {
         return userDao.getAllUsers()
     }
 

@@ -1,13 +1,11 @@
 package com.example.fitbuddy.activities
 
 import android.content.Intent
-import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fitbuddy.R
-import com.example.fitbuddy.activities.MainActivity
 
 open class MenuActivity : AppCompatActivity() {
 
@@ -30,16 +28,20 @@ open class MenuActivity : AppCompatActivity() {
                 navigateTo(SpotActivity::class.java)
                 true
             }
-            R.id.action_mn_graphs -> {
-                navigateTo(GraphActivity::class.java)
-                true
-            }
             R.id.action_mn_profile -> {
                 navigateTo(ProfileActivity::class.java)
                 true
             }
             R.id.action_mn_search -> {
                 navigateTo(SearchActivity::class.java)
+                true
+            }
+            R.id.action_mn_followers -> {
+                navigateTo(FollowersActivity::class.java)
+                true
+            }
+            R.id.action_mn_graphs -> {
+                navigateTo(GraphActivity::class.java)
                 true
             }
             R.id.action_logout -> {

@@ -65,11 +65,32 @@ class FitBuddyViewModel @Inject constructor(
         }
     }
 
-    suspend fun getFollowersForUser(userFK: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.getFollowersForUser(userFK)
+    suspend fun getFollowersForUser(userFK: String) : List<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val followers = repository.getFollowersForUser(userFK)
+                Log.d(TAG, "Spots retrieved")
+                followers
+            } catch (e: Exception) {
+                Log.e(TAG, "Error retrieving spots from database", e)
+                emptyList<String>()
+            }
         }
     }
+
+    suspend fun getFollowingForUser(userFK: String) : List<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val following = repository.getFollowingForUser(userFK)
+                Log.d(TAG, "Spots retrieved")
+                following
+            } catch (e: Exception) {
+                Log.e(TAG, "Error retrieving spots from database", e)
+                emptyList<String>()
+            }
+        }
+    }
+
 
     //SPOT
 
@@ -107,9 +128,16 @@ class FitBuddyViewModel @Inject constructor(
         }
     }
 
-    suspend fun getLogsForSpot(spotId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.getLogsForSpot(spotId)
+    suspend fun getLogsForSpot(spotId: Int) : List<SpotLog>{
+        return withContext(Dispatchers.IO) {
+            try {
+                val spotsLogs =  repository.getLogsForSpot(spotId)
+                Log.d(TAG, "Spots retrieved")
+                spotsLogs
+            } catch (e: Exception) {
+                Log.e(TAG, "Error retrieving spots from database", e)
+                emptyList<SpotLog>()
+            }
         }
     }
 

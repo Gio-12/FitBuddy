@@ -27,4 +27,9 @@ data class SpotLog(
     var id: Int = 0
 
     constructor() : this(0, 0, false)
+
+    override fun toString(): String {
+        val entryType = if (entry) "Entry" else "Exit"
+        return "$entryType at ${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(date))}"
+    }
 }

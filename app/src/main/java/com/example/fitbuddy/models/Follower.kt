@@ -1,13 +1,11 @@
 package com.example.fitbuddy.models
 
-import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.example.fitbuddy.utils.DateConverter
-import java.util.Date
 
 @Entity(
     tableName = "follower",
@@ -36,7 +34,6 @@ data class Follower(
     var followedDate: Long
 ) {
     @PrimaryKey(autoGenerate = true)
-    @NonNull
     var id: Int = 0
     constructor() : this("", "", 0)
 }

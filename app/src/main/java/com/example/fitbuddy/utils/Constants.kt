@@ -11,4 +11,5 @@ const val GEOFENCE_EXPIRATION = 10 * 24 * 60 * 60 * 1000L // 10 days
 const val GEOFENCE_DWELL_DELAY = 10 * 1000 // 10 secs
 const val LOCATION_REQUEST_CODE = 123
 const val WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 100
+const val LOCATION_PERMISSION_REQUEST_CODE = 1
 var isBackgroundActivityEnabled: Boolean = false

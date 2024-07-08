@@ -27,7 +27,12 @@ class FitBuddyRepository(
 
     suspend fun insertFollower(follower: Follower) = followerDao.insert(follower)
 
-    suspend fun getFollowersForUser(userFK: String) = followerDao.getFollowersForUser(userFK)
+    suspend fun getFollowersForUser(userFK: String): List<String> {
+        return followerDao.getFollowersForUser(userFK)
+    }
+    suspend fun getFollowingForUser(followerFK: String): List<String> {
+        return followerDao.getFollowingForUser(followerFK)
+    }
 
     //SPOTS
 

@@ -36,6 +36,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SpotActivity : MenuActivity(), OnMapReadyCallback {
 
+    private val tag = "SpotActivity"
+
     @Inject
     lateinit var repository: FitBuddyRepository
     private lateinit var viewModel: FitBuddyViewModel

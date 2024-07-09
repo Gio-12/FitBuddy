@@ -36,7 +36,7 @@ import kotlinx.coroutines.withContext
 @AndroidEntryPoint
 class MainActivity : MenuActivity() {
 
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
 
     //R STUFFS
     private lateinit var imageActivity: ImageView
@@ -78,9 +78,9 @@ class MainActivity : MenuActivity() {
     ) { permissions ->
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
             permissions[Manifest.permission.ACTIVITY_RECOGNITION] == true) {
-            Log.d(TAG, "All required permissions granted")
+            Log.d(tag, "All required permissions granted")
         } else {
-            Log.d(TAG, "Permission denied")
+            Log.d(tag, "Permission denied")
         }
     }
 
@@ -181,7 +181,7 @@ class MainActivity : MenuActivity() {
     override fun onDestroy() {
         super.onDestroy()
         if (isActionStarted) {
-            Log.d(TAG, "App is closing, ending the ongoing activity")
+            Log.d(tag, "App is closing, ending the ongoing activity")
             val endTime = System.currentTimeMillis()
             val actionId = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE).getLong("currentActivityId", -1)
             val steps = actionService?.getStepCount() ?: 0
@@ -207,7 +207,7 @@ class MainActivity : MenuActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun startActivityRecognition() {
-        Log.d(TAG, "Starting Activity Recognition")
+        Log.d(tag, "Starting Activity Recognition")
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -265,7 +265,7 @@ class MainActivity : MenuActivity() {
             showStartActionNotify()
             return
         }
-        Log.d(TAG, "Stopping Activity Recognition")
+        Log.d(tag, "Stopping Activity Recognition")
         val endTime = System.currentTimeMillis()
 
         // Retrieve the correct activity ID
@@ -293,7 +293,7 @@ class MainActivity : MenuActivity() {
         stopService(serviceIntent)
 
         if (isBackgroundActivityEnabled) {
-            Log.d(TAG, "Background activity recognition is enabled. Starting background service.")
+            Log.d(tag, "Background activity recognition is enabled. Starting background service.")
         }
     }
 
@@ -305,7 +305,7 @@ class MainActivity : MenuActivity() {
     }
 
     private fun saveEndActionToDatabase(actionId: Long, endTime: Long, steps: Int) {
-        Log.d(TAG, "Attempting to save end time to database for action ID $actionId at $endTime")
+        Log.d(tag, "Attempting to save end time to database for action ID $actionId at $endTime")
         lifecycleScope.launch {
             try {
                 val action = viewModel.getActionById(actionId)
@@ -318,10 +318,10 @@ class MainActivity : MenuActivity() {
                     }
                     viewModel.updateAction(action)
                 } else {
-                    Log.e(TAG, "Error saving end action to database")
+                    Log.e(tag, "Error saving end action to database")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error saving end action to database", e)
+                Log.e(tag, "Error saving end action to database", e)
             }
         }
     }

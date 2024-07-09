@@ -30,6 +30,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ChartActivity : MenuActivity() {
 
+    private val tag = "ChartActivity"
+
     @Inject
     lateinit var repository: FitBuddyRepository
     private lateinit var viewModel: FitBuddyViewModel

@@ -15,13 +15,12 @@ import com.example.fitbuddy.utils.KEY_USERNAME
 import com.example.fitbuddy.utils.SHARED_PREFS_NAME
 import com.example.fitbuddy.viewmodel.FitBuddyViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
-    private val TAG = "LoginActivity"
+    private val tag = "LoginActivity"
 
     private lateinit var textUsername: EditText
     private lateinit var textPassword: EditText
@@ -44,18 +43,18 @@ class LoginActivity : AppCompatActivity() {
             val username = textUsername.text.toString()
             val password = textPassword.text.toString()
 
-            Log.d(TAG, "Login button clicked with username: $username")
+            Log.d(tag, "Login button clicked with username: $username")
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
                 loginWithRoomDB(username, password)
             } else {
                 Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
-                Log.d(TAG, "Empty username or password")
+                Log.d(tag, "Empty username or password")
             }
         }
 
         btnGoToSignup.setOnClickListener {
-            Log.d(TAG, "Go to register button clicked")
+            Log.d(tag, "Go to register button clicked")
             val intent = Intent(applicationContext, SignupActivity::class.java)
             startActivity(intent)
             finish()
@@ -65,16 +64,16 @@ class LoginActivity : AppCompatActivity() {
     //TODO ROOMDB
     private fun loginWithRoomDB(username: String, password: String) {
         lifecycleScope.launch {
-            Log.d(TAG, "Checking user credentials in Room for username: $username")
+            Log.d(tag, "Checking user credentials in Room for username: $username")
             val user = viewModel.getUserWithPassword(username, password)
             if (user != null) {
                 saveUsernameToPreferences(username)
-                Log.d(TAG, "Login successful for username: $username")
+                Log.d(tag, "Login successful for username: $username")
                 val intent = Intent(applicationContext, MainActivity::class.java)
                 startActivity(intent)
                 finish()
             } else {
-                Log.d(TAG, "Invalid username or password for username: $username")
+                Log.d(tag, "Invalid username or password for username: $username")
             }
         }
     }

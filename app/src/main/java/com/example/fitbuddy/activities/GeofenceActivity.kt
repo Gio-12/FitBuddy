@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -39,14 +40,15 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @AndroidEntryPoint
 class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
 
-    private val TAG = "GeofenceActivity"
+    private val tag = "GeofenceActivity"
     private lateinit var map: GoogleMap
 
-    //VIEWMODEL
+    // VIEWMODEL
     private val viewModel: FitBuddyViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -98,13 +100,17 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
 
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapLongClickListener { latLng ->
-            addMarkerAndCircle(latLng)
-            saveSpotAndCreateGeofence(latLng)
+            getLocationName(latLng) { locationName ->
+                addMarkerAndCircle(latLng, locationName)
+                saveSpotAndCreateGeofence(latLng, locationName)
+            }
         }
     }
 
-    private fun addMarkerAndCircle(latLng: LatLng) {
-        map.addMarker(MarkerOptions().position(latLng).title("Geofence Location"))?.showInfoWindow()
+    private fun addMarkerAndCircle(latLng: LatLng, locationName: String?) {
+        map.addMarker(
+            MarkerOptions().position(latLng).title(locationName ?: "Geofence Location")
+        )?.showInfoWindow()
         map.addCircle(
             CircleOptions()
                 .center(latLng)
@@ -115,12 +121,12 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
     }
 
-    private fun saveSpotAndCreateGeofence(latLng: LatLng) {
+    private fun saveSpotAndCreateGeofence(latLng: LatLng, locationName: String?) {
         val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
 
         lifecycleScope.launch {
-            val spot = Spot(username, "",latLng.latitude, latLng.longitude)
+            val spot = Spot(username, locationName ?: "", latLng.latitude, latLng.longitude)
             val spotId = viewModel.insertSpot(spot).toInt()
             createGeofence(spotId, latLng)
         }
@@ -166,11 +172,11 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
                 val spots = viewModel.getSpotsForUser(username)
                 spots.forEach { spot ->
                     val latLng = LatLng(spot.latitude, spot.longitude)
-                    addMarkerAndCircle(latLng)
+                    addMarkerAndCircle(latLng, spot.name)
                     createGeofence(spot.id, latLng)
-                    }
+                }
             } catch (e: Exception) {
-                Log.e(TAG, "Error saving end action to database", e)
+                Log.e(tag, "Error saving end action to database", e)
             }
         }
     }
@@ -258,12 +264,30 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         if (requestCode == WRITE_EXTERNAL_STORAGE_REQUEST_CODE) {
             for (i in permissions.indices) {
                 if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "${permissions[i]} permission granted")
+                    Log.d(tag, "${permissions[i]} permission granted")
                 } else {
-                    Log.e(TAG, "${permissions[i]} permission denied")
+                    Log.e(tag, "${permissions[i]} permission denied")
                 }
             }
         }
     }
 
+    private fun getLocationName(latLng: LatLng, callback: (String?) -> Unit) {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        lifecycleScope.launch {
+            try {
+                val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+                if (addresses != null) {
+                    if (addresses.isNotEmpty()) {
+                        callback(addresses[0]?.getAddressLine(0))
+                    } else {
+                        callback(null)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(tag, "Geocoding failed", e)
+                callback(null)
+            }
+        }
+    }
 }

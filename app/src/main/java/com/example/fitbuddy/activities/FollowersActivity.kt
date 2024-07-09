@@ -26,6 +26,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class FollowersActivity : MenuActivity() {
 
+    private val tag = "FolowersActivity"
+
     @Inject
     lateinit var repository: FitBuddyRepository
     private lateinit var viewModel: FitBuddyViewModel

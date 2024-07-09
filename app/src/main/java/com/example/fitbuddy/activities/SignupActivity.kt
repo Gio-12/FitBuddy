@@ -13,13 +13,12 @@ import com.example.fitbuddy.R
 import com.example.fitbuddy.models.User
 import com.example.fitbuddy.viewmodel.FitBuddyViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SignupActivity : AppCompatActivity() {
 
-    private val TAG = "SignupActivity"
+    private val tag = "SignupActivity"
 
     private lateinit var signupUsername: EditText
     private lateinit var signupPassword: EditText
@@ -59,7 +58,7 @@ class SignupActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val checkUser = viewModel.getUserByUsername(username)
             if (checkUser != null) {
-                Log.d(TAG, "Username already taken: $username")
+                Log.d(tag, "Username already taken: $username")
                 Toast.makeText(this@SignupActivity, "Username already taken", Toast.LENGTH_SHORT).show()
             } else {
                 signupNewUserInRoomDB(username, password)
@@ -71,7 +70,7 @@ class SignupActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val newUser = User(username, password)
             viewModel.insertUser(newUser)
-            Log.d(TAG, "Registration Successful in RoomDB")
+            Log.d(tag, "Registration Successful in RoomDB")
             Toast.makeText(this@SignupActivity, "Registration Successful in RoomDB", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this@SignupActivity, LoginActivity::class.java))
             finish()

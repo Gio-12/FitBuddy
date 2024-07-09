@@ -23,6 +23,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ProfileActivity : MenuActivity() {
 
+    private val tag = "ProfileActivity"
+
     @Inject
     lateinit var repository: FitBuddyRepository
     private lateinit var viewModel: FitBuddyViewModel

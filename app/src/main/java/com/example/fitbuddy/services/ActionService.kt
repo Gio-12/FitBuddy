@@ -13,16 +13,31 @@ import android.hardware.SensorManager
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.fitbuddy.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
 
 class ActionService : Service(), SensorEventListener {
 
+    var TAG = "ActionService"
+
     private val binder = LocalBinder()
     private lateinit var notificationManager: NotificationManager
-    private lateinit var sensorManager: SensorManager
     private var steps: Int = 0
+
+    private val sensorManager by lazy {
+        getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    private val sensor: Sensor? by lazy {
+        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) }
 
     inner class LocalBinder : Binder() {
         fun getService(): ActionService = this@ActionService
@@ -32,7 +47,9 @@ class ActionService : Service(), SensorEventListener {
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        if (sensor == null) {
+            Log.e(TAG,"Step counter sensor is not present on this device")
+        }
         createNotificationChannel()
     }
 
@@ -44,7 +61,9 @@ class ActionService : Service(), SensorEventListener {
         val selectedActivityType = intent?.getStringExtra("selectedActionType") ?: "WALKING"
 
         if (selectedActivityType == "WALKING") {
-            trackSteps()
+            CoroutineScope(Dispatchers.IO).launch {
+                trackSteps()
+            }
         }
 
         startForegroundService()
@@ -67,17 +86,35 @@ class ActionService : Service(), SensorEventListener {
         startForeground(1, notification)
     }
 
-    private fun trackSteps() {
-        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)?.also { stepCounter ->
-            sensorManager.registerListener(this, stepCounter, SensorManager.SENSOR_DELAY_UI)
+
+    private suspend fun trackSteps() {
+        withContext(Dispatchers.Main) {
+            suspendCancellableCoroutine { continuation ->
+                Log.d(TAG, "Registering sensor listener... ")
+
+                val listener = object : SensorEventListener {
+                    override fun onSensorChanged(event: SensorEvent?) {
+                        event?.let {
+                            val stepsSinceLastReboot = it.values[0].toInt()
+                            Log.d(TAG, "Steps since last reboot: $stepsSinceLastReboot")
+                            steps = stepsSinceLastReboot
+                            continuation.resume(Unit)
+                        }
+                    }
+
+                    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                        Log.d(TAG, "Accuracy changed to: $accuracy")
+                    }
+                }
+                sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+                continuation.invokeOnCancellation {
+                    sensorManager.unregisterListener(listener)
+                }
+            }
         }
     }
 
-    override fun onSensorChanged(event: SensorEvent?) {
-        event?.let {
-            steps = event.values[0].toInt()
-        }
-    }
+    override fun onSensorChanged(event: SensorEvent?) {}
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 

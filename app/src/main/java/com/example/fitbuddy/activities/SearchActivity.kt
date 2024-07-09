@@ -72,4 +72,10 @@ class SearchActivity : MenuActivity() {
         intent.putExtra("username", username)
         startActivity(intent)
     }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        moveTaskToBack(true)
+    }
 }

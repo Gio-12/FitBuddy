@@ -110,30 +110,28 @@ class ChartActivity : MenuActivity() {
     }
 
     private fun updateActivityPieChart(actions: List<Action>) {
-        // Group actions by activity type and prepare PieChart entries
         val activityMap = actions.groupBy { it.actionType }
         val entries = activityMap.map { (type, actions) ->
             PieEntry(actions.size.toFloat(), type)
         }
 
         val dataSet = PieDataSet(entries, "Activity Distribution")
-        dataSet.colors = ColorTemplate.MATERIAL_COLORS.asList() // Set different colors
-        dataSet.valueTextSize = 14f // Increase value text size
-        dataSet.valueFormatter = PercentFormatter(activityPieChart) // Format values as percentages
+        dataSet.colors = ColorTemplate.MATERIAL_COLORS.asList()
+        dataSet.valueTextSize = 14f
+        dataSet.valueFormatter = PercentFormatter(activityPieChart)
 
         val data = PieData(dataSet)
         activityPieChart.data = data
-        activityPieChart.setEntryLabelTextSize(14f) // Increase entry label text size
-        activityPieChart.invalidate() // Refresh the chart
+        activityPieChart.setEntryLabelTextSize(14f)
+        activityPieChart.invalidate()
     }
 
     private fun updateStepsLineChart(actions: List<Action>) {
-        // Group actions by day and prepare LineChart entries
         val stepsMap = actions.groupBy { action ->
             val calendar = Calendar.getInstance().apply { timeInMillis = action.startTime }
             calendar.get(Calendar.DAY_OF_YEAR)
         }.mapValues { entry ->
-            entry.value.sumBy { it.steps }.coerceAtLeast(0) // Ensure steps are non-negative
+            entry.value.sumBy { it.steps }.coerceAtLeast(0)
         }
 
         val entries = stepsMap.map { (day, steps) ->
@@ -141,15 +139,15 @@ class ChartActivity : MenuActivity() {
         }
 
         val dataSet = LineDataSet(entries, "Daily Steps")
-        dataSet.colors = ColorTemplate.COLORFUL_COLORS.asList() // Set different colors
+        dataSet.colors = ColorTemplate.COLORFUL_COLORS.asList()
 
         val data = LineData(dataSet)
         stepsLineChart.data = data
-        stepsLineChart.invalidate() // Refresh the chart
+        stepsLineChart.invalidate()
     }
 
     private fun updateTotals(actions: List<Action>) {
-        val totalSteps = actions.sumBy { it.steps.coerceAtLeast(0) } // Ensure total steps are non-negative
+        val totalSteps = actions.sumBy { it.steps.coerceAtLeast(0) }
         val totalSpots = actions.size
         totalStepsTextView.text = getString(R.string.total_steps, totalSteps)
         totalSpotsTextView.text = getString(R.string.total_spots, totalSpots)

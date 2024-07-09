@@ -114,4 +114,10 @@ class ProfileActivity : MenuActivity() {
         intent.putExtra("username", profileUsername)
         startActivity(intent)
     }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        moveTaskToBack(true)
+    }
 }

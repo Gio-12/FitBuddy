@@ -265,4 +265,5 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
             }
         }
     }
+
 }

@@ -157,4 +157,10 @@ class FollowersActivity : MenuActivity() {
             loadFollowing(this@FollowersActivity.username)
         }
     }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        moveTaskToBack(true)
+    }
 }

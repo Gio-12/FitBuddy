@@ -110,4 +110,10 @@ class SpotActivity : MenuActivity(), OnMapReadyCallback {
             spotLogsRecyclerView.adapter = SpotLogsAdapter(spotLogs)
         }
     }
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        moveTaskToBack(true)
+    }
+
 }

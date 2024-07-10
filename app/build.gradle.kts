@@ -4,15 +4,15 @@ plugins {
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.kapt")
     id("dagger.hilt.android.plugin")
-//    id("com.google.gms.google-services")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.fitbuddy"
+    namespace = "com.application.fitbuddy"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.fitbuddy"
+        applicationId = "com.application.fitbuddy"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -83,10 +83,10 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
 
-    // ROOM
-    val room = "2.6.1"
+//    // ROOM
+//    val room = "2.6.1"
 
-    kapt("androidx.room:room-compiler:$room")
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.rxjava2)
@@ -101,10 +101,10 @@ dependencies {
     implementation(libs.androidx.localbroadcastmanager)
 
     // Import the Firebase BoM
-//    implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
-//    implementation("com.google.firebase:firebase-analytics")
-//    implementation("com.google.firebase:firebase-firestore")
-//    implementation("com.google.firebase:firebase-database-ktx:20.3.0")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.database.ktx)
 
 //    // CHARTS
     implementation(libs.mpandroidchart)
@@ -120,4 +120,4 @@ dependencies {
     annotationProcessor (libs.compiler)
 }
 
-//apply(plugin = "com.google.gms.google-services")
+apply(plugin = "com.google.gms.google-services")

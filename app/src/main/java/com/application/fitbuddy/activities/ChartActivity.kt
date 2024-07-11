@@ -7,33 +7,33 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.application.fitbuddy.R
 import com.application.fitbuddy.models.Action
-import com.application.fitbuddy.repository.FitBuddyRepository
 import com.application.fitbuddy.utils.KEY_USERNAME
 import com.application.fitbuddy.utils.SHARED_PREFS_NAME
-import com.application.fitbuddy.viewmodel.FitBuddyViewModel
-import com.application.fitbuddy.viewmodel.FitBuddyViewModelFactory
+import com.application.fitbuddy.viewmodel.ActionViewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.utils.ColorTemplate
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
+import com.github.mikephil.charting.utils.ColorTemplate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.*
-import javax.inject.Inject
+import java.util.Calendar
 
 @AndroidEntryPoint
 class ChartActivity : MenuActivity() {
 
     private val tag = "ChartActivity"
 
-    @Inject
-    lateinit var repository: FitBuddyRepository
-    private lateinit var viewModel: FitBuddyViewModel
+    private val actionViewModel: ActionViewModel by viewModels()
 
     private lateinit var timePeriodSpinner: Spinner
     private lateinit var activityPieChart: PieChart
@@ -52,9 +52,6 @@ class ChartActivity : MenuActivity() {
         val defaultUsername = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
 
         username = intent.getStringExtra("username") ?: defaultUsername
-
-        val factory = FitBuddyViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory)[FitBuddyViewModel::class.java]
 
         timePeriodSpinner = findViewById(R.id.time_period_spinner)
         activityPieChart = findViewById(R.id.activity_pie_chart)
@@ -103,10 +100,13 @@ class ChartActivity : MenuActivity() {
         }
 
         lifecycleScope.launch {
-            val actions = viewModel.getActionsForPeriod(username, startTime, endTime)
-            updateActivityPieChart(actions)
-            updateStepsLineChart(actions)
-            updateTotals(actions)
+            actionViewModel.getActionsForPeriod(username, startTime, endTime, { actions ->
+                updateActivityPieChart(actions)
+                updateStepsLineChart(actions)
+                updateTotals(actions)
+            }, { error ->
+                // Handle error
+            })
         }
     }
 

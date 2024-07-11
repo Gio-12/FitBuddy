@@ -27,7 +27,7 @@ import com.application.fitbuddy.utils.KEY_USERNAME
 import com.application.fitbuddy.utils.LOCATION_REQUEST_CODE
 import com.application.fitbuddy.utils.SHARED_PREFS_NAME
 import com.application.fitbuddy.utils.WRITE_EXTERNAL_STORAGE_REQUEST_CODE
-import com.application.fitbuddy.viewmodel.FitBuddyViewModel
+import com.application.fitbuddy.viewmodel.SpotViewModel
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
@@ -48,8 +48,8 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
     private val tag = "GeofenceActivity"
     private lateinit var map: GoogleMap
 
-    // VIEWMODEL
-    private val viewModel: FitBuddyViewModel by viewModels()
+    // VIEWMODELS
+    private val spotViewModel: SpotViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,8 +127,11 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
 
         lifecycleScope.launch {
             val spot = Spot(username, locationName ?: "", latLng.latitude, latLng.longitude)
-            val spotId = viewModel.insertSpot(spot).toInt()
-            createGeofence(spotId, latLng)
+            spotViewModel.insert(spot, onSuccess = { spotId ->
+                createGeofence(spotId.toInt(), latLng)
+            }, onFailure = { errorMessage ->
+                Log.e(tag, "Error saving spot: $errorMessage")
+            })
         }
     }
 
@@ -169,14 +172,17 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
         lifecycleScope.launch {
             try {
-                val spots = viewModel.getSpotsForUser(username)
-                spots.forEach { spot ->
-                    val latLng = LatLng(spot.latitude, spot.longitude)
-                    addMarkerAndCircle(latLng, spot.name)
-                    createGeofence(spot.id, latLng)
-                }
+                spotViewModel.getSpotsForUser(username, onSuccess = { spots ->
+                    spots.forEach { spot ->
+                        val latLng = LatLng(spot.latitude, spot.longitude)
+                        addMarkerAndCircle(latLng, spot.name)
+                        createGeofence(spot.id, latLng)
+                    }
+                }, onFailure = { errorMessage ->
+                    Log.e(tag, "Error loading saved geofences: $errorMessage")
+                })
             } catch (e: Exception) {
-                Log.e(tag, "Error saving end action to database", e)
+                Log.e(tag, "Error loading saved geofences", e)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.application.fitbuddy.activities
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ComponentName
@@ -7,64 +8,65 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.RadioGroup
 import android.widget.TextView
-import com.application.fitbuddy.services.ActionService
-import android.os.*
-import android.util.Log
-import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
-import com.bumptech.glide.Glide
-import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.application.fitbuddy.R
 import com.application.fitbuddy.models.Action
+import com.application.fitbuddy.services.ActionService
 import com.application.fitbuddy.utils.KEY_DEFAULT_TOGGLE
 import com.application.fitbuddy.utils.KEY_USERNAME
 import com.application.fitbuddy.utils.SHARED_PREFS_NAME
 import com.application.fitbuddy.utils.isBackgroundActivityEnabled
-import com.application.fitbuddy.viewmodel.FitBuddyViewModel
+import com.application.fitbuddy.viewmodel.ActionViewModel
+import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class MainActivity : MenuActivity() {
 
     private val tag = "MainActivity"
 
-    //R STUFFS
+    // Views
     private lateinit var imageActivity: ImageView
     private lateinit var btnStart: Button
     private lateinit var btnStop: Button
     private lateinit var radioGroupActivities: RadioGroup
     private lateinit var chronometer: TextView
 
-    //ACTION VALUES
+    // Action values
     private var selectedActionType: String = "WALKING"
     private var isActionStarted = false
 
-    //SERVICE
-    private var actionService: ActionService ? = null
+    // Service
+    private var actionService: ActionService? = null
     private var isBound = false
 
-    //TIMER
+    // Timer
     private var startTime: Long = 0
     private var handler: Handler = Handler(Looper.getMainLooper())
     private var runnable: Runnable? = null
 
-    //VIEWMODEL
-    private val viewModel: FitBuddyViewModel by viewModels()
+    // ViewModel
+    private val actionViewModel: ActionViewModel by viewModels()
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as ActionService.LocalBinder
-            actionService  = binder.getService()
+            actionService = binder.getService()
             isBound = true
         }
 
@@ -83,7 +85,6 @@ class MainActivity : MenuActivity() {
             Log.d(tag, "Permission denied")
         }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,8 +152,7 @@ class MainActivity : MenuActivity() {
 
     private fun getLoggedUser(): String? {
         val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-        val username = sharedPreferences.getString(KEY_USERNAME, "")
-        return username
+        return sharedPreferences.getString(KEY_USERNAME, "")
     }
 
     private fun redirectToLogin() {
@@ -185,11 +185,10 @@ class MainActivity : MenuActivity() {
             val endTime = System.currentTimeMillis()
             val actionId = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE).getLong("currentActivityId", -1)
             val steps = actionService?.getStepCount() ?: 0
-            saveEndActionToDatabase(actionId, endTime, steps)
+            saveEndAction(actionId, endTime, steps)
             isActionStarted = false
         }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun checkPermissions() {
@@ -224,7 +223,14 @@ class MainActivity : MenuActivity() {
                 endTime = 0,
             )
             lifecycleScope.launch {
-                val actionId = saveActionToDatabaseRoomDB(action)
+                val actionId = saveAction(action)
+                if (actionId == -1L) {
+                    // Handle insertion failure
+                    Log.e(tag, "Failed to insert action into database")
+                } else {
+                    // Handle successful insertion
+                    Log.d(tag, "Action inserted successfully with ID: $actionId")
+                }
                 val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
                 sharedPreferences.edit().putLong("currentActionId", actionId).apply()
 
@@ -233,7 +239,7 @@ class MainActivity : MenuActivity() {
                 btnStop.isEnabled = true
                 setRadioButtonsEnabled(false)
 
-                // start the chronometer
+                // Start the chronometer
                 startTime = System.currentTimeMillis()
                 runnable = object : Runnable {
                     @SuppressLint("DefaultLocale")
@@ -248,12 +254,11 @@ class MainActivity : MenuActivity() {
                 }
                 handler.post(runnable!!)
 
-                // Start the ActivityMonitoringService with the activity ID
+                // Start the ActivityMonitoringService with the action ID
                 val serviceIntent = Intent(this@MainActivity, ActionService::class.java)
                 serviceIntent.putExtra("actionId", actionId)
                 serviceIntent.putExtra("selectedActionType", selectedActionType)
                 ContextCompat.startForegroundService(this@MainActivity, serviceIntent)
-
             }
         } else {
             checkPermissions()
@@ -268,14 +273,14 @@ class MainActivity : MenuActivity() {
         Log.d(tag, "Stopping Activity Recognition")
         val endTime = System.currentTimeMillis()
 
-        // Retrieve the correct activity ID
+        // Retrieve the correct action ID
         val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val actionId = sharedPreferences.getLong("currentActionId", -1)
 
         // Get step count from the service
         val steps = actionService?.getStepCount() ?: 0
 
-        saveEndActionToDatabase(actionId, endTime, steps)
+        saveEndAction(actionId, endTime, steps)
 
         showStartActionEndingNotify()
 
@@ -284,8 +289,7 @@ class MainActivity : MenuActivity() {
         btnStop.isEnabled = false
         setRadioButtonsEnabled(true)
 
-        // stop the chronometer
-
+        // Stop the chronometer
         handler.removeCallbacks(runnable!!)
 
         // Stop the ActivityMonitoringService
@@ -297,33 +301,53 @@ class MainActivity : MenuActivity() {
         }
     }
 
-    private suspend fun saveActionToDatabaseRoomDB(action: Action): Long {
-        return withContext(Dispatchers.IO) {
-            val actionId = viewModel.insertAction(action)
-            actionId
-        }
+//    private suspend fun saveActionToDatabaseRoomDB(action: Action): Long {
+//        return withContext(Dispatchers.IO) {
+//            actionViewModel.insert(action)
+//        }
+//    }
+
+    private fun saveAction(action: Action): Long {
+        var actionId: Long = -1 // Initialize with a default value
+
+        actionViewModel.insert(action,
+            onSuccess = { id ->
+                actionId = id
+                Log.d(tag, "Action inserted successfully with ID: $actionId")
+            },
+            onFailure = { errorMessage ->
+                // Handle failure
+                Log.e(tag, "Failed to insert action: $errorMessage")
+            }
+        )
+        return actionId // Return the actionId here
     }
 
-    private fun saveEndActionToDatabase(actionId: Long, endTime: Long, steps: Int) {
+    private fun saveEndAction(actionId: Long, endTime: Long, steps: Int) {
         Log.d(tag, "Attempting to save end time to database for action ID $actionId at $endTime")
-        lifecycleScope.launch {
-            try {
-                val action = viewModel.getActionById(actionId)
+        actionViewModel.getActionById(actionId,
+            onSuccess = { action ->
                 if (action != null) {
-                    action.let {
-                        it.endTime = endTime
-                        if (it.actionType == "WALKING") {
-                            it.steps = steps
-                        }
+                    action.endTime = endTime
+                    if (action.actionType == "WALKING") {
+                        action.steps = steps
                     }
-                    viewModel.updateAction(action)
+                    actionViewModel.update(action,
+                        onSuccess = {
+                            Log.d(tag, "Action updated successfully")
+                        },
+                        onFailure = { errorMessage ->
+                            Log.e(tag, "Failed to update action: $errorMessage")
+                        }
+                    )
                 } else {
-                    Log.e(tag, "Error saving end action to database")
+                    Log.e(tag, "Action not found for ID: $actionId")
                 }
-            } catch (e: Exception) {
-                Log.e(tag, "Error saving end action to database", e)
+            },
+            onFailure = { errorMessage ->
+                Log.e(tag, "Failed to get action by ID: $errorMessage")
             }
-        }
+        )
     }
 
     private fun showStartActionNotify() {
@@ -370,4 +394,3 @@ class MainActivity : MenuActivity() {
         moveTaskToBack(true)
     }
 }
-

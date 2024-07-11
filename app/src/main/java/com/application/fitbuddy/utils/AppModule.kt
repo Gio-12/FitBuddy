@@ -2,14 +2,15 @@ package com.application.fitbuddy.utils
 
 import android.content.Context
 import androidx.room.Room
-import com.application.fitbuddy.db.FitBuddyDatabase
 import com.application.fitbuddy.dao.*
-import com.application.fitbuddy.repository.FitBuddyRepository
+import com.application.fitbuddy.db.FitBuddyDatabase
+import com.application.fitbuddy.repository.*
+import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
@@ -43,13 +44,35 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRepository(
-        actionDao: ActionDao,
-        followerDao: FollowerDao,
-        spotDao: SpotDao,
-        spotLogDao: SpotLogDao,
-        userDao: UserDao
-    ): FitBuddyRepository {
-        return FitBuddyRepository(actionDao, followerDao, spotDao, spotLogDao, userDao)
+    fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideActionRepository(actionDao: ActionDao, database: FirebaseDatabase): ActionRepository {
+        return ActionRepository(actionDao, database)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFollowerRepository(followerDao: FollowerDao, database: FirebaseDatabase): FollowerRepository {
+        return FollowerRepository(followerDao, database)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpotRepository(spotDao: SpotDao, database: FirebaseDatabase): SpotRepository {
+        return SpotRepository(spotDao, database)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpotLogRepository(spotLogDao: SpotLogDao, database: FirebaseDatabase): SpotLogRepository {
+        return SpotLogRepository(spotLogDao, database)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(userDao: UserDao, database: FirebaseDatabase): UserRepository {
+        return UserRepository(userDao, database)
     }
 }

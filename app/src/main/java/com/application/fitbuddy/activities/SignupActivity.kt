@@ -5,13 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.application.fitbuddy.R
 import com.application.fitbuddy.models.User
-import com.application.fitbuddy.viewmodel.FitBuddyViewModel
+import com.application.fitbuddy.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -25,7 +24,7 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var btnSignup: Button
     private lateinit var btnGoToLogin: Button
 
-    private val viewModel: FitBuddyViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,9 +40,9 @@ class SignupActivity : AppCompatActivity() {
             val password = signupPassword.text.toString()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
-                signupWithRoomDB(username, password)
+                signup(username, password)
             } else {
-                Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
+                Log.e(tag, "Please enter username and password")
             }
         }
 
@@ -53,27 +52,38 @@ class SignupActivity : AppCompatActivity() {
         }
     }
 
-    //TODO ROOMDB
-    private fun signupWithRoomDB(username: String, password: String) {
+    private fun signup(username: String, password: String) {
         lifecycleScope.launch {
-            val checkUser = viewModel.getUserByUsername(username)
-            if (checkUser != null) {
-                Log.d(tag, "Username already taken: $username")
-                Toast.makeText(this@SignupActivity, "Username already taken", Toast.LENGTH_SHORT).show()
-            } else {
-                signupNewUserInRoomDB(username, password)
-            }
+            userViewModel.getUserByUsername(
+                username,
+                onSuccess = { checkUser ->
+                    if (checkUser != null) {
+                        Log.d(tag, "Username already taken: $username")
+                    } else {
+                        signupNewUser(username, password)
+                    }
+                },
+                onFailure = { errorMessage ->
+                    Log.d(tag, "Error checking username: $errorMessage")
+                }
+            )
         }
     }
 
-    private fun signupNewUserInRoomDB(username: String, password: String) {
+    private fun signupNewUser(username: String, password: String) {
         lifecycleScope.launch {
             val newUser = User(username, password)
-            viewModel.insertUser(newUser)
-            Log.d(tag, "Registration Successful in RoomDB")
-            Toast.makeText(this@SignupActivity, "Registration Successful in RoomDB", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this@SignupActivity, LoginActivity::class.java))
-            finish()
+            userViewModel.insert(
+                newUser,
+                onSuccess = {
+                    Log.d(tag, "Registration Successful in RoomDB")
+                    startActivity(Intent(this@SignupActivity, LoginActivity::class.java))
+                    finish()
+                },
+                onFailure = { errorMessage ->
+                    Log.d(tag, "Error registering user: $errorMessage")
+                }
+            )
         }
     }
 }

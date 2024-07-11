@@ -2,28 +2,24 @@ package com.application.fitbuddy.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.application.fitbuddy.R
 import com.application.fitbuddy.adapters.SearchAdapter
-import com.application.fitbuddy.repository.FitBuddyRepository
-import com.application.fitbuddy.viewmodel.FitBuddyViewModel
-import com.application.fitbuddy.viewmodel.FitBuddyViewModelFactory
+import com.application.fitbuddy.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchActivity : MenuActivity() {
 
     private val tag = "SearchActivity"
 
-    @Inject
-    lateinit var repository: FitBuddyRepository
-    private lateinit var viewModel: FitBuddyViewModel
+    private val userViewModel: UserViewModel by viewModels()
 
     private lateinit var searchRecyclerView: RecyclerView
     private lateinit var searchAdapter: SearchAdapter
@@ -32,9 +28,6 @@ class SearchActivity : MenuActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.search_activity)
         setSupportActionBar(findViewById(R.id.toolbar))
-
-        val factory = FitBuddyViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory)[FitBuddyViewModel::class.java]
 
         // Initialize RecyclerView
         searchRecyclerView = findViewById(R.id.recycler_view)
@@ -63,9 +56,19 @@ class SearchActivity : MenuActivity() {
 
     private fun searchUsers(query: String) {
         lifecycleScope.launch {
-            val users = viewModel.searchUsers(query)
-            searchAdapter.submitList(users)
+            userViewModel.searchUsers(query,
+                onSuccess = { users ->
+                    searchAdapter.submitList(users)
+                },
+                onFailure = { errorMessage ->
+                    showError(errorMessage)
+                }
+            )
         }
+    }
+
+    private fun showError(errorMessage: String) {
+        Log.e(tag, errorMessage)
     }
 
     private fun navigateToProfile(username: String) {

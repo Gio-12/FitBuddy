@@ -19,18 +19,20 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import com.application.fitbuddy.R
 import com.application.fitbuddy.geofence.GeofenceReceiver
-import com.application.fitbuddy.repository.FitBuddyRepository
+import com.application.fitbuddy.repository.SpotRepository
 import com.application.fitbuddy.utils.KEY_USERNAME
 import com.application.fitbuddy.utils.SHARED_PREFS_NAME
-import com.application.fitbuddy.viewmodel.FitBuddyViewModel
-import com.application.fitbuddy.viewmodel.FitBuddyViewModelFactory
+import com.application.fitbuddy.viewmodel.SpotViewModel
+import com.application.fitbuddy.viewmodel.SpotViewModelFactory
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -39,10 +41,10 @@ class GeofenceService : Service() {
     private val tag = "GeofenceService"
 
     @Inject
-    lateinit var repository: FitBuddyRepository
+    lateinit var repository: SpotRepository
 
     private lateinit var geofencingClient: GeofencingClient
-    private lateinit var viewModel: FitBuddyViewModel
+    private lateinit var viewModel: SpotViewModel
     private val viewModelStore = ViewModelStore()
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -52,8 +54,8 @@ class GeofenceService : Service() {
 
         geofencingClient = LocationServices.getGeofencingClient(this)
 
-        val factory = FitBuddyViewModelFactory(repository)
-        viewModel = ViewModelProvider(viewModelStore, factory)[FitBuddyViewModel::class.java]
+        val factory = SpotViewModelFactory(repository)
+        viewModel = ViewModelProvider(viewModelStore, factory)[SpotViewModel::class.java]
 
         startForegroundService()
         monitorGeofences()
@@ -90,10 +92,16 @@ class GeofenceService : Service() {
         val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
 
         CoroutineScope(Dispatchers.IO).launch {
-            val spots = viewModel.getSpotsForUser(username)
-            for (spot in spots) {
-                createGeofence(spot.id, LatLng(spot.latitude, spot.longitude))
-            }
+            viewModel.getSpotsForUser(username,
+                onSuccess = { spots ->
+                    for (spot in spots) {
+                        createGeofence(spot.id, LatLng(spot.latitude, spot.longitude))
+                    }
+                },
+                onFailure = { errorMessage ->
+                    Log.e(tag, "Failed to get spots: $errorMessage")
+                }
+            )
         }
     }
 

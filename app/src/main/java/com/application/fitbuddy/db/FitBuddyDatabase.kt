@@ -10,11 +10,11 @@ import com.application.fitbuddy.dao.FollowerDao
 import com.application.fitbuddy.dao.SpotDao
 import com.application.fitbuddy.dao.SpotLogDao
 import com.application.fitbuddy.dao.UserDao
-import com.application.fitbuddy.models.User
 import com.application.fitbuddy.models.Action
 import com.application.fitbuddy.models.Follower
 import com.application.fitbuddy.models.Spot
 import com.application.fitbuddy.models.SpotLog
+import com.application.fitbuddy.models.User
 import com.application.fitbuddy.utils.DateConverter
 
 @Database(entities = [User::class, Action::class, Follower::class, Spot::class, SpotLog::class], version = 1, exportSchema = false)

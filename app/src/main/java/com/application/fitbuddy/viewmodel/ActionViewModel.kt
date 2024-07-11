@@ -7,13 +7,14 @@ import com.application.fitbuddy.repository.ActionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class ActionViewModel @Inject constructor(private val repository: ActionRepository) : ViewModel() {
 
-    fun insert(action: Action, onSuccess: (Long) -> Unit, onFailure: (String) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+    suspend fun insert(action: Action, onSuccess: (Long) -> Unit, onFailure: (String) -> Unit) {
+        withContext(Dispatchers.IO) {
             try {
                 val actionId = repository.insert(action)
                 onSuccess(actionId)

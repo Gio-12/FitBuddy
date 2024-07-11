@@ -307,7 +307,7 @@ class MainActivity : MenuActivity() {
 //        }
 //    }
 
-    private fun saveAction(action: Action): Long {
+    private suspend fun saveAction(action: Action): Long {
         var actionId: Long = -1 // Initialize with a default value
 
         actionViewModel.insert(action,

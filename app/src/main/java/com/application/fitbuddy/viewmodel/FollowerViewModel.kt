@@ -46,7 +46,12 @@ class FollowerViewModel @Inject constructor(private val repository: FollowerRepo
         }
     }
 
-    fun removeFollowing(userFK: String, followerFK: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun removeFollowing(
+        userFK: String,
+        followerFK: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.removeFollowing(userFK, followerFK)
@@ -57,7 +62,11 @@ class FollowerViewModel @Inject constructor(private val repository: FollowerRepo
         }
     }
 
-    fun getFollowerById(followerId: Long, onSuccess: (Follower?) -> Unit, onFailure: (String) -> Unit) {
+    fun getFollowerById(
+        followerId: Long,
+        onSuccess: (Follower?) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         viewModelScope.launch {
             try {
                 val follower = repository.getFollowerById(followerId)
@@ -68,7 +77,11 @@ class FollowerViewModel @Inject constructor(private val repository: FollowerRepo
         }
     }
 
-    fun getFollowersForUser(userFK: String, onSuccess: (List<String>) -> Unit, onFailure: (String) -> Unit) {
+    fun getFollowersForUser(
+        userFK: String,
+        onSuccess: (List<String>) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         viewModelScope.launch {
             try {
                 val followers = repository.getFollowersForUser(userFK)
@@ -79,11 +92,31 @@ class FollowerViewModel @Inject constructor(private val repository: FollowerRepo
         }
     }
 
-    fun getFollowingForUser(followerFK: String, onSuccess: (List<String>) -> Unit, onFailure: (String) -> Unit) {
+    fun getFollowingForUser(
+        followerFK: String,
+        onSuccess: (List<String>) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         viewModelScope.launch {
             try {
                 val followers = repository.getFollowingForUser(followerFK)
                 onSuccess(followers)
+            } catch (e: Exception) {
+                onFailure(e.message ?: "Unknown error")
+            }
+        }
+    }
+
+    fun isFollowing(
+        followerUsername: String,
+        loggedUsername: String,
+        onSuccess: (Boolean) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val followingList = repository.getFollowingForUser(loggedUsername)
+                onSuccess(followingList.contains(followerUsername))
             } catch (e: Exception) {
                 onFailure(e.message ?: "Unknown error")
             }

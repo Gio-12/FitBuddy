@@ -44,8 +44,16 @@ class FollowerRepository(
 
     suspend fun removeFollowing(userFK: String, followerFK: String) {
         try {
+            // query per rimuovere la corrispondenza userFK e followerFK
+            val query = followersRef.orderByChild("userFK").equalTo(userFK).get().await()
+            for (snapshot in query.children) {
+                val follower = snapshot.getValue(Follower::class.java)
+                if (follower != null && follower.followerFK == followerFK) {
+                    snapshot.ref.removeValue().await()
+                    break // Se si trova e rimuove il nodo, si esce dal ciclo
+                }
+            }
             followerDao.removeFollowing(userFK, followerFK)
-            followersRef.child("${userFK}_${followerFK}").removeValue().await()
         } catch (e: Exception) {
             throw FollowerRepositoryException("Failed to remove following--> $e", e.cause)
         }
@@ -65,7 +73,7 @@ class FollowerRepository(
             val followersSnapshot = followersRef.get().await()
             if (followersSnapshot.exists() && followersSnapshot.hasChildren()) {
                 val query = followersRef.orderByChild("userFK").equalTo(userFK).get().await()
-                query.children.mapNotNull { it.key }
+                query.children.mapNotNull { it.getValue(Follower::class.java)?.followerFK }
             } else {
                 emptyList()
             }

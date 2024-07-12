@@ -55,6 +55,12 @@ class FollowersActivity : MenuActivity() {
             },
             onFollowClick = { followerUsername ->
                 addFollowing(followerUsername)
+            },
+            onUnfollowClick = { followerUsername ->
+                removeFollowing(followerUsername)
+            },
+            isFollowingUser = { followerUsername, onSuccess, onFailure ->
+                followerViewModel.isFollowing(followerUsername, username, onSuccess, onFailure)
             }
         )
 
@@ -97,24 +103,26 @@ class FollowersActivity : MenuActivity() {
             username,
             onSuccess = { user ->
                 findViewById<TextView>(R.id.username_text_view).text = user?.username
-                findViewById<TextView>(R.id.followers_count).text = followerViewModel.getFollowersForUser(
+
+                followerViewModel.getFollowersForUser(
                     username,
                     onSuccess = { followers ->
-                        followers.size.toString()
+                        findViewById<TextView>(R.id.followers_count).text = followers.size.toString()
                     },
                     onFailure = { errorMessage ->
                         showError(errorMessage)
                     }
-                ).toString()
-                findViewById<TextView>(R.id.following_count).text = followerViewModel.getFollowingForUser(
+                )
+
+                followerViewModel.getFollowingForUser(
                     username,
                     onSuccess = { following ->
-                        following.size.toString()
+                        findViewById<TextView>(R.id.following_count).text = following.size.toString()
                     },
                     onFailure = { errorMessage ->
                         showError(errorMessage)
                     }
-                ).toString()
+                )
             },
             onFailure = { errorMessage ->
                 showError(errorMessage)
@@ -189,11 +197,21 @@ class FollowersActivity : MenuActivity() {
                 follower,
                 onSuccess = {
                     loadFollowing(username)
+                    updateFollowerState(followerUsername, true)
                 },
                 onFailure = { errorMessage ->
                     showError(errorMessage)
                 }
             )
+        }
+    }
+
+    private fun updateFollowerState(followerUsername: String, isFollowed: Boolean) {
+        val followersList = followersAdapter.currentList.toMutableList()
+        val index = followersList.indexOf(followerUsername)
+        if (index != -1) {
+            followersList[index] = if (isFollowed) "Following" else "NotFollowing"
+            followersAdapter.submitList(followersList)
         }
     }
 
@@ -203,6 +221,7 @@ class FollowersActivity : MenuActivity() {
             username,
             onSuccess = {
                 loadFollowing(username)
+                updateFollowerState(followingUsername, false)
             },
             onFailure = { errorMessage ->
                 showError(errorMessage)

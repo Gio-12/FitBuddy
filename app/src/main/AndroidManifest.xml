@@ -51,17 +51,15 @@
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location"
-            android:permission="TODO"
             tools:ignore="ExportedService" />
-
         <receiver
             android:name="com.application.fitbuddy.geofence.GeofenceReceiver"
             android:enabled="true"
-            android:exported="true"
-            android:permission="TODO"
+            android:exported="false"
             tools:ignore="ExportedReceiver">
             <intent-filter>
                 <action android:name="com.application.ACTION_RECEIVE_GEOFENCE" />
+                <action android:name="com.google.android.gms.location.intent.action.GEOFENCE_TRANSITION"/>
             </intent-filter>
         </receiver>
         <service

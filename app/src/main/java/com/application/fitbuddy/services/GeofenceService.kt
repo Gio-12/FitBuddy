@@ -31,7 +31,9 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,6 +48,7 @@ class GeofenceService : Service() {
     private lateinit var geofencingClient: GeofencingClient
     private lateinit var viewModel: SpotViewModel
     private val viewModelStore = ViewModelStore()
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
@@ -62,7 +65,7 @@ class GeofenceService : Service() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("UnspecifiedImmutableFlag", "WrongConstant")
+    @SuppressLint("ForegroundServiceType")
     private fun startForegroundService() {
         val channelId = "GeofenceChannelId"
         val channelName = "Geofence Service Channel"
@@ -86,12 +89,13 @@ class GeofenceService : Service() {
         return START_STICKY
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun monitorGeofences() {
         Log.d(tag, "monitorGeofences")
         val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
 
-        CoroutineScope(Dispatchers.IO).launch {
+        GlobalScope.launch(Dispatchers.IO) {
             viewModel.getSpotsForUser(username,
                 onSuccess = { spots ->
                     for (spot in spots) {
@@ -136,9 +140,7 @@ class GeofenceService : Service() {
     }
 
     private fun getGeofencePendingIntent(): PendingIntent {
-        val intent = Intent(this, GeofenceReceiver::class.java).apply {
-            action = "com.example.ACTION_RECEIVE_GEOFENCE"
-        }
+        val intent = Intent(this, GeofenceReceiver::class.java)
         return PendingIntent.getBroadcast(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )

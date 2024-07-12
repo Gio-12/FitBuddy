@@ -13,11 +13,10 @@ class SpotLogRepository(
 
     private val spotLogsRef: DatabaseReference = database.getReference("spot_logs")
 
-    suspend fun insert(spotLog: SpotLog) {
+    suspend fun insert(spotLog: SpotLog) : Long {
         return try {
-            // Insert into RoomDB
             val spotLogId = spotLogDao.insert(spotLog)
-            // Insert into Firebase
+            spotLog.id = spotLogId.toInt()
             spotLogsRef.child(spotLog.id.toString()).setValue(spotLog).await()
             spotLogId
         } catch (e: Exception) {
@@ -27,9 +26,7 @@ class SpotLogRepository(
 
     suspend fun update(spotLog: SpotLog) {
         try {
-            // Update in RoomDB
             spotLogDao.update(spotLog)
-            // Update in Firebase
             spotLogsRef.child(spotLog.id.toString()).setValue(spotLog).await()
         } catch (e: Exception) {
             throw SpotLogRepositoryException("Failed to update spot log", e)
@@ -38,9 +35,7 @@ class SpotLogRepository(
 
     suspend fun delete(spotLog: SpotLog) {
         try {
-            // Delete from RoomDB
             spotLogDao.delete(spotLog)
-            // Delete from Firebase
             spotLogsRef.child(spotLog.id.toString()).removeValue().await()
         } catch (e: Exception) {
             throw SpotLogRepositoryException("Failed to delete spot log", e)
@@ -58,13 +53,17 @@ class SpotLogRepository(
 
     suspend fun getLogsForSpot(spotId: Int): List<SpotLog> {
         return try {
-            val query = spotLogsRef.orderByChild("spotId").equalTo(spotId.toString()).get().await()
-            query.children.mapNotNull { it.getValue(SpotLog::class.java) }
+            val spotLogsSnapshot = spotLogsRef.get().await()
+            if (spotLogsSnapshot.exists() && spotLogsSnapshot.hasChildren()) {
+                val query = spotLogsRef.orderByChild("spotId").equalTo(spotId.toString()).get().await()
+                query.children.mapNotNull { it.getValue(SpotLog::class.java) }
+            } else {
+                emptyList()
+            }
         } catch (e: Exception) {
-            throw SpotLogRepositoryException("Failed to get logs for spot", e)
+                throw SpotLogRepositoryException("Failed to get logs for spot", e)
         }
     }
 
-    // Custom exception for repository errors
     class SpotLogRepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }

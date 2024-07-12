@@ -15,9 +15,7 @@ class UserRepository(
 
     suspend fun insert(user: User) {
         return try {
-            // Insert into RoomDB
             val userId = userDao.insert(user)
-            // Insert into Firebase
             usersRef.child(user.username).setValue(user).await()
             userId
         } catch (e: Exception) {
@@ -27,9 +25,7 @@ class UserRepository(
 
     suspend fun update(user: User) {
         try {
-            // Update in RoomDB
             userDao.update(user)
-            // Update in Firebase
             usersRef.child(user.username).setValue(user).await()
         } catch (e: Exception) {
             throw UserRepositoryException("Failed to update user", e)
@@ -38,9 +34,7 @@ class UserRepository(
 
     suspend fun delete(user: User) {
         try {
-            // Delete from RoomDB
             userDao.delete(user)
-            // Delete from Firebase
             usersRef.child(user.username).removeValue().await()
         } catch (e: Exception) {
             throw UserRepositoryException("Failed to delete user", e)
@@ -72,8 +66,13 @@ class UserRepository(
 
     suspend fun searchUsers(query: String): List<String> {
         return try {
-            val snapshot = usersRef.orderByKey().startAt(query).endAt(query + "\uf8ff").get().await()
-            snapshot.children.mapNotNull { it.key }
+            val usersSnapshot = usersRef.get().await()
+            if (usersSnapshot.exists() && usersSnapshot.hasChildren()) {
+                val snapshot = usersRef.orderByKey().startAt(query).endAt(query + "\uf8ff").get().await()
+                snapshot.children.mapNotNull { it.key }
+            } else {
+                emptyList()
+            }
         } catch (e: Exception) {
             throw UserRepositoryException("Failed to search users", e)
         }
@@ -81,13 +80,17 @@ class UserRepository(
 
     suspend fun getAllUsers(): List<String> {
         return try {
-            val snapshot = usersRef.get().await()
-            snapshot.children.mapNotNull { it.key }
+            val usersSnapshot = usersRef.get().await()
+            if (usersSnapshot.exists() && usersSnapshot.hasChildren()) {
+                val snapshot = usersRef.get().await()
+                snapshot.children.mapNotNull { it.key }
+            } else {
+                emptyList()
+            }
         } catch (e: Exception) {
             throw UserRepositoryException("Failed to get all users", e)
         }
     }
 
-    // Custom exception for repository errors
     class UserRepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }

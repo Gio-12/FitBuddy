@@ -15,12 +15,10 @@ class ActionRepository(
 
     suspend fun insert(action: Action): Long {
         return try {
-            // Insert into RoomDB
             val actionId = actionDao.insert(action)
             action.id = actionId.toInt()
             actionsRef.child(action.id.toString()).setValue(action).await()
             actionId
-
         } catch (e: Exception) {
             throw ActionRepositoryException("Failed to insert action", e)
         }
@@ -28,9 +26,7 @@ class ActionRepository(
 
     suspend fun update(action: Action) {
         try {
-            // Update in RoomDB
             actionDao.update(action)
-            // Update in Firebase
             actionsRef.child(action.id.toString()).setValue(action).await()
         } catch (e: Exception) {
             throw ActionRepositoryException("Failed to update action", e)
@@ -39,9 +35,7 @@ class ActionRepository(
 
     suspend fun delete(action: Action) {
         try {
-            // Delete from RoomDB
             actionDao.delete(action)
-            // Delete from Firebase
             actionsRef.child(action.id.toString()).removeValue().await()
         } catch (e: Exception) {
             throw ActionRepositoryException("Failed to delete action", e)
@@ -59,8 +53,13 @@ class ActionRepository(
 
     suspend fun getActionsForUser(userUsername: String): List<Action> {
         return try {
-            val query = actionsRef.orderByChild("userUsername").equalTo(userUsername).get().await()
-            query.children.mapNotNull { it.getValue(Action::class.java) }
+            val actionsSnapshot = actionsRef.get().await()
+            if (actionsSnapshot.exists() && actionsSnapshot.hasChildren()) {
+                val query = actionsRef.orderByChild("userUsername").equalTo(userUsername).get().await()
+                query.children.mapNotNull { it.getValue(Action::class.java) }
+            } else {
+                emptyList()
+            }
         } catch (e: Exception) {
             throw ActionRepositoryException("Failed to get actions for user", e)
         }
@@ -68,14 +67,18 @@ class ActionRepository(
 
     suspend fun getActionsForPeriod(username: String, startTime: Long, endTime: Long): List<Action> {
         return try {
-            val query = actionsRef.orderByChild("userUsername").equalTo(username).get().await()
-            query.children.mapNotNull { it.getValue(Action::class.java) }
-                .filter { it.startTime >= startTime && it.endTime <= endTime }
+            val actionsSnapshot = actionsRef.get().await()
+            if (actionsSnapshot.exists() && actionsSnapshot.hasChildren()) {
+                val query = actionsRef.orderByChild("userUsername").equalTo(username).get().await()
+                query.children.mapNotNull { it.getValue(Action::class.java) }
+                    .filter { it.startTime >= startTime && it.endTime <= endTime }
+            } else {
+                emptyList()
+            }
         } catch (e: Exception) {
             throw ActionRepositoryException("Failed to get actions for period", e)
         }
     }
 
-    // Custom exception for repository errors
     class ActionRepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }

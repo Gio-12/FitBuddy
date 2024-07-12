@@ -7,13 +7,14 @@ import com.application.fitbuddy.repository.SpotRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class SpotViewModel @Inject constructor(private val repository: SpotRepository) : ViewModel() {
 
-    fun insert(spot: Spot, onSuccess: (Long) -> Unit, onFailure: (String) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+    suspend fun insert(spot: Spot, onSuccess: (Long) -> Unit, onFailure: (String) -> Unit) {
+        withContext(Dispatchers.IO) {
             try {
                 val spotId = repository.insert(spot)
                 onSuccess(spotId)

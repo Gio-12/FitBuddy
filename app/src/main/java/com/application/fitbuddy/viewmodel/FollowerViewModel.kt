@@ -7,13 +7,14 @@ import com.application.fitbuddy.repository.FollowerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class FollowerViewModel @Inject constructor(private val repository: FollowerRepository) : ViewModel() {
 
-    fun insert(follower: Follower, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+    suspend fun insert(follower: Follower, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        withContext(Dispatchers.IO) {
             try {
                 repository.insert(follower)
                 onSuccess()

@@ -10,7 +10,7 @@ import com.application.fitbuddy.models.Follower
 @Dao
 interface FollowerDao {
     @Insert
-    suspend fun insert(follower: Follower)
+    suspend fun insert(follower: Follower) : Long
 
     @Query("DELETE FROM follower WHERE userFK = :username AND followerFK = :loggedUsername")
     suspend fun removeFollowing(username: String, loggedUsername: String)

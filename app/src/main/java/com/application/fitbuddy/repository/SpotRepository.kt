@@ -15,9 +15,8 @@ class SpotRepository(
 
     suspend fun insert(spot: Spot): Long {
         return try {
-            // Insert into RoomDB
             val spotId = spotDao.insert(spot)
-            // Insert into Firebase
+            spot.id = spotId.toInt()
             spotsRef.child(spot.id.toString()).setValue(spot).await()
             spotId
         } catch (e: Exception) {
@@ -27,9 +26,7 @@ class SpotRepository(
 
     suspend fun update(spot: Spot) {
         try {
-            // Update in RoomDB
             spotDao.update(spot)
-            // Update in Firebase
             spotsRef.child(spot.id.toString()).setValue(spot).await()
         } catch (e: Exception) {
             throw SpotRepositoryException("Failed to update spot", e)
@@ -38,9 +35,7 @@ class SpotRepository(
 
     suspend fun delete(spot: Spot) {
         try {
-            // Delete from RoomDB
             spotDao.delete(spot)
-            // Delete from Firebase
             spotsRef.child(spot.id.toString()).removeValue().await()
         } catch (e: Exception) {
             throw SpotRepositoryException("Failed to delete spot", e)
@@ -58,13 +53,17 @@ class SpotRepository(
 
     suspend fun getSpotsForUser(userUsername: String): List<Spot> {
         return try {
-            val query = spotsRef.orderByChild("userUsername").equalTo(userUsername).get().await()
-            query.children.mapNotNull { it.getValue(Spot::class.java) }
+            val spotsSnapshot = spotsRef.get().await()
+            if (spotsSnapshot.exists() && spotsSnapshot.hasChildren()) {
+                val query = spotsRef.orderByChild("userUsername").equalTo(userUsername).get().await()
+                query.children.mapNotNull { it.getValue(Spot::class.java) }
+            } else {
+                emptyList()
+            }
         } catch (e: Exception) {
             throw SpotRepositoryException("Failed to get spots for user", e)
         }
     }
 
-    // Custom exception for repository errors
     class SpotRepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)
 }

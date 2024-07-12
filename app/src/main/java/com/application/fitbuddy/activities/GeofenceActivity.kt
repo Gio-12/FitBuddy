@@ -169,10 +169,10 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
 
     private fun loadSavedGeofence() {
         val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-        val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
+        val userUsername = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
         lifecycleScope.launch {
             try {
-                spotViewModel.getSpotsForUser(username, onSuccess = { spots ->
+                spotViewModel.getSpotsForUser(userUsername, onSuccess = { spots ->
                     spots.forEach { spot ->
                         val latLng = LatLng(spot.latitude, spot.longitude)
                         addMarkerAndCircle(latLng, spot.name)

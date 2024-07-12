@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.application.fitbuddy.R
@@ -19,6 +20,7 @@ import com.application.fitbuddy.utils.SHARED_PREFS_NAME
 import com.application.fitbuddy.viewmodel.FollowerViewModel
 import com.application.fitbuddy.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class FollowersActivity : MenuActivity() {
@@ -88,7 +90,6 @@ class FollowersActivity : MenuActivity() {
         }
 
         loadUserDetails(username)
-        loadFollowers(username)
     }
 
     private fun loadUserDetails(username: String) {
@@ -178,20 +179,22 @@ class FollowersActivity : MenuActivity() {
     }
 
     private fun addFollowing(followerUsername: String) {
-        val follower = Follower(
-            userFK = followerUsername,
-            followerFK = username,
-            followedDate = System.currentTimeMillis()
-        )
-        followerViewModel.insert(
-            follower,
-            onSuccess = {
-                loadFollowing(username)
-            },
-            onFailure = { errorMessage ->
-                showError(errorMessage)
-            }
-        )
+        lifecycleScope.launch {
+            val follower = Follower(
+                userFK = followerUsername,
+                followerFK = username,
+                followedDate = System.currentTimeMillis()
+            )
+            followerViewModel.insert(
+                follower,
+                onSuccess = {
+                    loadFollowing(username)
+                },
+                onFailure = { errorMessage ->
+                    showError(errorMessage)
+                }
+            )
+        }
     }
 
     private fun removeFollowing(followingUsername: String) {

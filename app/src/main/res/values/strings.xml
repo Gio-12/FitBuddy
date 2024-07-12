@@ -27,7 +27,7 @@
 
 
     <string name="total_steps">Total Steps: %d</string>
-    <string name="total_spots">Total Spots: %d</string>
+    <string name="total_actions">Total Activities: %d</string>
     <string name="steps">Steps</string>
 
     <string-array name="time_periods">

@@ -10,7 +10,7 @@ import com.application.fitbuddy.models.SpotLog
 @Dao
 interface SpotLogDao {
     @Insert
-    suspend fun insert(spotLog: SpotLog)
+    suspend fun insert(spotLog: SpotLog) : Long
 
     @Update
     suspend fun update(spotLog: SpotLog)

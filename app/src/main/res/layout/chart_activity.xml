@@ -76,10 +76,10 @@
                     android:layout_marginStart="16dp" />
 
                 <TextView
-                    android:id="@+id/total_spots_text_view"
+                    android:id="@+id/total_actions_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/total_spots"
+                    android:text="@string/total_actions"
                     android:layout_marginStart="8dp" />
             </LinearLayout>
         </LinearLayout>

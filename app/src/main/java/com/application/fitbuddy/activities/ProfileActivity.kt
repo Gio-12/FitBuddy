@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.application.fitbuddy.R
 import com.application.fitbuddy.models.Follower
 import com.application.fitbuddy.utils.KEY_USERNAME
@@ -15,6 +16,9 @@ import com.application.fitbuddy.utils.SHARED_PREFS_NAME
 import com.application.fitbuddy.viewmodel.FollowerViewModel
 import com.application.fitbuddy.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class ProfileActivity : MenuActivity() {
@@ -69,8 +73,9 @@ class ProfileActivity : MenuActivity() {
     private fun loadProfileData() {
         userViewModel.getUserByUsername(profileUsername,
             onSuccess = { user ->
-                usernameTextView.text = user?.username
-                // Set profile picture if available, otherwise, it will show the placeholder
+                lifecycleScope.launch(Dispatchers.Main) {
+                    usernameTextView.text = user?.username
+                }
             },
             onFailure = { error ->
                 showError(error)
@@ -81,12 +86,14 @@ class ProfileActivity : MenuActivity() {
     private fun checkIfFollowing() {
         followerViewModel.getFollowingForUser(loggedUsername,
             onSuccess = { followingList ->
-                if (followingList.contains(profileUsername)) {
-                    followButton.isEnabled = false
-                    followButton.text = getString(R.string.following)
-                } else {
-                    followButton.isEnabled = true
-                    followButton.text = getString(R.string.follow)
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (followingList.contains(profileUsername)) {
+                        followButton.isEnabled = false
+                        followButton.text = getString(R.string.following)
+                    } else {
+                        followButton.isEnabled = true
+                        followButton.text = getString(R.string.follow)
+                    }
                 }
             },
             onFailure = { error ->
@@ -96,16 +103,24 @@ class ProfileActivity : MenuActivity() {
     }
 
     private fun followUser() {
-        val follower = Follower(userFK = profileUsername, followerFK = loggedUsername, followedDate = System.currentTimeMillis())
-        followerViewModel.insert(follower,
-            onSuccess = {
-                followButton.isEnabled = false
-                followButton.text = getString(R.string.following)
-            },
-            onFailure = { error ->
-                showError(error)
-            }
-        )
+        lifecycleScope.launch {
+            val follower = Follower(
+                userFK = profileUsername,
+                followerFK = loggedUsername,
+                followedDate = System.currentTimeMillis()
+            )
+            followerViewModel.insert(follower,
+                onSuccess = {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        followButton.isEnabled = false
+                        followButton.text = getString(R.string.following)
+                    }
+                },
+                onFailure = { error ->
+                    showError(error)
+                }
+            )
+        }
     }
 
     private fun navigateToSpotActivity() {
@@ -121,7 +136,9 @@ class ProfileActivity : MenuActivity() {
     }
 
     private fun showError(errorMessage: String) {
-        Log.e(tag, errorMessage)
+        lifecycleScope.launch(Dispatchers.Main) {
+            Log.e(tag, errorMessage)
+        }
     }
 
     @Deprecated("Deprecated in Java")

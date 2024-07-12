@@ -39,7 +39,7 @@ class ChartActivity : MenuActivity() {
     private lateinit var activityPieChart: PieChart
     private lateinit var stepsLineChart: LineChart
     private lateinit var totalStepsTextView: TextView
-    private lateinit var totalSpotsTextView: TextView
+    private lateinit var totalActionsTextView: TextView
 
     private lateinit var username: String
 
@@ -57,7 +57,7 @@ class ChartActivity : MenuActivity() {
         activityPieChart = findViewById(R.id.activity_pie_chart)
         stepsLineChart = findViewById(R.id.steps_line_chart)
         totalStepsTextView = findViewById(R.id.total_steps_text_view)
-        totalSpotsTextView = findViewById(R.id.total_spots_text_view)
+        totalActionsTextView = findViewById(R.id.total_actions_text_view)
 
         val adapter = ArrayAdapter.createFromResource(
             this,
@@ -149,8 +149,8 @@ class ChartActivity : MenuActivity() {
 
     private fun updateTotals(actions: List<Action>) {
         val totalSteps = actions.sumBy { it.steps.coerceAtLeast(0) }
-        val totalSpots = actions.size
+        val totalActions = actions.size
         totalStepsTextView.text = getString(R.string.total_steps, totalSteps)
-        totalSpotsTextView.text = getString(R.string.total_spots, totalSpots)
+        totalActionsTextView.text = getString(R.string.total_actions, totalActions)
     }
 }

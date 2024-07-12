@@ -79,7 +79,7 @@ class FollowerRepository(
             val followersSnapshot = followersRef.get().await()
             if (followersSnapshot.exists() && followersSnapshot.hasChildren()) {
                 val query = followersRef.orderByChild("followerFK").equalTo(followerFK).get().await()
-                query.children.mapNotNull { it.key }
+                query.children.mapNotNull { it.getValue(Follower::class.java)?.userFK }
             } else {
                 emptyList()
             }

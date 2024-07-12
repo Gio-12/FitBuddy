@@ -84,6 +84,8 @@ class ProfileActivity : MenuActivity() {
     }
 
     private fun checkIfFollowing() {
+        followButton.visibility = Button.GONE
+
         followerViewModel.getFollowingForUser(loggedUsername,
             onSuccess = { followingList ->
                 lifecycleScope.launch(Dispatchers.Main) {
@@ -94,10 +96,12 @@ class ProfileActivity : MenuActivity() {
                         followButton.isEnabled = true
                         followButton.text = getString(R.string.follow)
                     }
+                    followButton.visibility = Button.VISIBLE
                 }
             },
             onFailure = { error ->
                 showError(error)
+                followButton.visibility = Button.VISIBLE
             }
         )
     }

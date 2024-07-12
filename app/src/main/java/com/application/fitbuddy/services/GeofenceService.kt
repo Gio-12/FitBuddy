@@ -144,13 +144,6 @@ class GeofenceService : Service() {
         }
     }
 
-//    private fun getGeofencePendingIntent(): PendingIntent {
-//        val intent = Intent(this, GeofenceReceiver::class.java)
-//        return PendingIntent.getBroadcast(
-//            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-//        )
-//    }
-
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }

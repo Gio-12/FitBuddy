@@ -47,9 +47,9 @@
         <activity android:name="com.application.fitbuddy.activities.ChartActivity" />
         <activity android:name="com.application.fitbuddy.activities.SearchActivity" />
 
-
         <receiver android:name="com.application.fitbuddy.geofence.GeofenceReceiver"
             android:enabled="true" />
+
         <service
             android:name="com.application.fitbuddy.services.GeofenceService"
             android:exported="false" />

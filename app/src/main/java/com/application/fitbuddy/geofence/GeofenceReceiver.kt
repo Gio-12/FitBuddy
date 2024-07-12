@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.application.fitbuddy.R
 import com.application.fitbuddy.db.FitBuddyDatabase
 import com.application.fitbuddy.models.SpotLog
+import com.application.fitbuddy.repository.SpotLogRepository
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
@@ -21,9 +22,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import com.google.firebase.database.FirebaseDatabase
 
 class GeofenceReceiver : BroadcastReceiver() {
+
+    private lateinit var repository: SpotLogRepository
 
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.d("GeofenceReceiver", "onReceive called")
@@ -35,7 +38,10 @@ class GeofenceReceiver : BroadcastReceiver() {
                     Log.e("GeofenceReceiver", "Geofencing error: $errorMessage")
                     return
                 }
+                Log.e("GeofenceReceiver", "geofencingEvent != Null")
             }
+
+            Log.e("GeofenceReceiver", "context != Null && intent != null")
 
             val geofenceTransition = geofencingEvent?.geofenceTransition
             if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER || geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
@@ -79,11 +85,15 @@ class GeofenceReceiver : BroadcastReceiver() {
     private fun saveSpotLog(context: Context, spotId: Int, transitionType: Int) {
         GlobalScope.launch(Dispatchers.IO) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                val spotLogDao = FitBuddyDatabase.getDatabase(context).spotLogDao()
+                repository = SpotLogRepository(
+                    FitBuddyDatabase.getDatabase(context).spotLogDao(),
+                    FirebaseDatabase.getInstance()
+                )
                 val entry = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
                 val spotLog = SpotLog(spotId = spotId, date = System.currentTimeMillis(), entry = entry)
                 try {
-                    spotLogDao.insert(spotLog)
+                    repository.insert(spotLog)
+
                     withContext(Dispatchers.IO) {
                         Log.d("GeofenceReceiver", "SpotLog recorded: $spotLog")
                     }

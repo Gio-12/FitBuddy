@@ -19,7 +19,7 @@ class UserRepository(
             usersRef.child(user.username).setValue(user).await()
             userId
         } catch (e: Exception) {
-            throw UserRepositoryException("Failed to insert user", e)
+            throw UserRepositoryException("Failed to insert user--> $e", e.cause)
         }
     }
 
@@ -28,7 +28,7 @@ class UserRepository(
             userDao.update(user)
             usersRef.child(user.username).setValue(user).await()
         } catch (e: Exception) {
-            throw UserRepositoryException("Failed to update user", e)
+            throw UserRepositoryException("Failed to update user--> $e", e.cause)
         }
     }
 
@@ -37,7 +37,7 @@ class UserRepository(
             userDao.delete(user)
             usersRef.child(user.username).removeValue().await()
         } catch (e: Exception) {
-            throw UserRepositoryException("Failed to delete user", e)
+            throw UserRepositoryException("Failed to delete user--> $e", e.cause)
         }
     }
 
@@ -46,7 +46,7 @@ class UserRepository(
             val dataSnapshot = usersRef.child(username).get().await()
             dataSnapshot.getValue(User::class.java)
         } catch (e: Exception) {
-            throw UserRepositoryException("Failed to get user by username", e)
+            throw UserRepositoryException("Failed to get user by username--> $e", e.cause)
         }
     }
 
@@ -60,7 +60,7 @@ class UserRepository(
                 null
             }
         } catch (e: Exception) {
-            throw UserRepositoryException("Failed to get user with password", e)
+            throw UserRepositoryException("Failed to get user with password--> $e", e.cause)
         }
     }
 
@@ -74,7 +74,7 @@ class UserRepository(
                 emptyList()
             }
         } catch (e: Exception) {
-            throw UserRepositoryException("Failed to search users", e)
+            throw UserRepositoryException("Failed to search users--> $e", e.cause)
         }
     }
 
@@ -88,7 +88,7 @@ class UserRepository(
                 emptyList()
             }
         } catch (e: Exception) {
-            throw UserRepositoryException("Failed to get all users", e)
+            throw UserRepositoryException("Failed to get all users--> $e", e.cause)
         }
     }
 

@@ -317,7 +317,7 @@ class MainActivity : MenuActivity() {
             },
             onFailure = { errorMessage ->
                 // Handle failure
-                Log.e(tag, "Failed to insert action: $errorMessage")
+                showError(errorMessage)
             }
         )
         return actionId // Return the actionId here
@@ -337,7 +337,7 @@ class MainActivity : MenuActivity() {
                             Log.d(tag, "Action updated successfully")
                         },
                         onFailure = { errorMessage ->
-                            Log.e(tag, "Failed to update action: $errorMessage")
+                            showError(errorMessage)
                         }
                     )
                 } else {
@@ -345,7 +345,7 @@ class MainActivity : MenuActivity() {
                 }
             },
             onFailure = { errorMessage ->
-                Log.e(tag, "Failed to get action by ID: $errorMessage")
+                showError(errorMessage)
             }
         )
     }
@@ -388,6 +388,10 @@ class MainActivity : MenuActivity() {
         sharedPreferences.edit().putString(KEY_DEFAULT_TOGGLE, actionType).apply()
     }
 
+    private fun showError(errorMessage: String) {
+        Log.e(tag, errorMessage)
+    }
+    
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         super.onBackPressed()

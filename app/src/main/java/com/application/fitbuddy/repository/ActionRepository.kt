@@ -20,7 +20,7 @@ class ActionRepository(
             actionsRef.child(action.id.toString()).setValue(action).await()
             actionId
         } catch (e: Exception) {
-            throw ActionRepositoryException("Failed to insert action", e)
+            throw ActionRepositoryException("Failed to insert action--> $e", e.cause)
         }
     }
 
@@ -29,7 +29,7 @@ class ActionRepository(
             actionDao.update(action)
             actionsRef.child(action.id.toString()).setValue(action).await()
         } catch (e: Exception) {
-            throw ActionRepositoryException("Failed to update action", e)
+            throw ActionRepositoryException("Failed to update action--> $e", e.cause)
         }
     }
 
@@ -38,7 +38,7 @@ class ActionRepository(
             actionDao.delete(action)
             actionsRef.child(action.id.toString()).removeValue().await()
         } catch (e: Exception) {
-            throw ActionRepositoryException("Failed to delete action", e)
+            throw ActionRepositoryException("Failed to delete action--> $e", e.cause)
         }
     }
 
@@ -47,7 +47,7 @@ class ActionRepository(
             val dataSnapshot = actionsRef.child(actionId.toString()).get().await()
             dataSnapshot.getValue(Action::class.java)
         } catch (e: Exception) {
-            throw ActionRepositoryException("Failed to get action by id", e)
+            throw ActionRepositoryException("Failed to get action by id--> $e", e.cause)
         }
     }
 
@@ -61,7 +61,7 @@ class ActionRepository(
                 emptyList()
             }
         } catch (e: Exception) {
-            throw ActionRepositoryException("Failed to get actions for user", e)
+            throw ActionRepositoryException("Failed to get actions for user--> $e", e.cause)
         }
     }
 
@@ -76,7 +76,7 @@ class ActionRepository(
                 emptyList()
             }
         } catch (e: Exception) {
-            throw ActionRepositoryException("Failed to get actions for period", e)
+            throw ActionRepositoryException("Failed to get actions for period--> $e", e.cause)
         }
     }
 

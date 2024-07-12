@@ -130,7 +130,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
             spotViewModel.insert(spot, onSuccess = { spotId ->
                 createGeofence(spotId.toInt(), latLng)
             }, onFailure = { errorMessage ->
-                Log.e(tag, "Error saving spot: $errorMessage")
+                showError(errorMessage)
             })
         }
     }
@@ -179,7 +179,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
                         createGeofence(spot.id, latLng)
                     }
                 }, onFailure = { errorMessage ->
-                    Log.e(tag, "Error loading saved geofences: $errorMessage")
+                    showError(errorMessage)
                 })
             } catch (e: Exception) {
                 Log.e(tag, "Error loading saved geofences", e)
@@ -295,5 +295,9 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
                 callback(null)
             }
         }
+    }
+
+    private fun showError(errorMessage: String) {
+        Log.e(tag, errorMessage)
     }
 }

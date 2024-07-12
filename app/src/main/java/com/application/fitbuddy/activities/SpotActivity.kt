@@ -98,7 +98,7 @@ class SpotActivity : MenuActivity(), OnMapReadyCallback {
                         }
                     },
                     onFailure = { errorMessage ->
-                        Log.e(tag, "Error loading spots: $errorMessage")
+                        showError(errorMessage)
                     })
             } catch (e: Exception) {
                 Log.e(tag, "Error loading spots: ${e.message}")
@@ -117,12 +117,16 @@ class SpotActivity : MenuActivity(), OnMapReadyCallback {
                         spotLogsRecyclerView.adapter = SpotLogsAdapter(spotLogs)
                     },
                     onFailure = { errorMessage ->
-                        Log.e(tag, "Error loading logs: $errorMessage")
+                        showError(errorMessage)
                     })
             } catch (e: Exception) {
                 Log.e(tag, "Error loading logs: ${e.message}")
             }
         }
+    }
+
+    private fun showError(errorMessage: String) {
+        Log.e(tag, errorMessage)
     }
 
     @Deprecated("Deprecated in Java")

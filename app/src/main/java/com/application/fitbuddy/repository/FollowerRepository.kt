@@ -20,7 +20,7 @@ class FollowerRepository(
             followersRef.child(follower.id.toString()).setValue(follower).await()
             followerId
         } catch (e: Exception) {
-            throw FollowerRepositoryException("Failed to insert follower", e)
+            throw FollowerRepositoryException("Failed to insert follower--> $e", e.cause)
         }
     }
 
@@ -29,7 +29,7 @@ class FollowerRepository(
             followerDao.update(follower)
             followersRef.child(follower.id.toString()).setValue(follower).await()
         } catch (e: Exception) {
-            throw FollowerRepositoryException("Failed to update follower", e)
+            throw FollowerRepositoryException("Failed to update follower--> $e", e.cause)
         }
     }
 
@@ -38,7 +38,7 @@ class FollowerRepository(
             followerDao.delete(follower)
             followersRef.child(follower.id.toString()).removeValue().await()
         } catch (e: Exception) {
-            throw FollowerRepositoryException("Failed to delete follower", e)
+            throw FollowerRepositoryException("Failed to delete follower--> $e", e.cause)
         }
     }
 
@@ -47,7 +47,7 @@ class FollowerRepository(
             followerDao.removeFollowing(userFK, followerFK)
             followersRef.child("${userFK}_${followerFK}").removeValue().await()
         } catch (e: Exception) {
-            throw FollowerRepositoryException("Failed to remove following", e)
+            throw FollowerRepositoryException("Failed to remove following--> $e", e.cause)
         }
     }
 
@@ -56,7 +56,7 @@ class FollowerRepository(
             val dataSnapshot = followersRef.child(followerId.toString()).get().await()
             dataSnapshot.getValue(Follower::class.java)
         } catch (e: Exception) {
-            throw FollowerRepositoryException("Failed to get follower by id", e)
+            throw FollowerRepositoryException("Failed to get follower by id--> $e", e.cause)
         }
     }
 
@@ -70,7 +70,7 @@ class FollowerRepository(
                 emptyList()
             }
         } catch (e: Exception) {
-            throw FollowerRepositoryException("Failed to get followers for user", e)
+            throw FollowerRepositoryException("Failed to get followers for user --> $e", e.cause)
         }
     }
 
@@ -84,7 +84,7 @@ class FollowerRepository(
                 emptyList()
             }
         } catch (e: Exception) {
-            throw FollowerRepositoryException("Failed to get following for user", e)
+            throw FollowerRepositoryException("Failed to get following for user--> $e", e.cause)
         }
     }
 

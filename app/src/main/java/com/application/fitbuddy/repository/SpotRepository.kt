@@ -20,7 +20,7 @@ class SpotRepository(
             spotsRef.child(spot.id.toString()).setValue(spot).await()
             spotId
         } catch (e: Exception) {
-            throw SpotRepositoryException("Failed to insert spot", e)
+            throw SpotRepositoryException("Failed to insert spot--> $e", e.cause)
         }
     }
 
@@ -29,7 +29,7 @@ class SpotRepository(
             spotDao.update(spot)
             spotsRef.child(spot.id.toString()).setValue(spot).await()
         } catch (e: Exception) {
-            throw SpotRepositoryException("Failed to update spot", e)
+            throw SpotRepositoryException("Failed to update spot--> $e", e.cause)
         }
     }
 
@@ -38,7 +38,7 @@ class SpotRepository(
             spotDao.delete(spot)
             spotsRef.child(spot.id.toString()).removeValue().await()
         } catch (e: Exception) {
-            throw SpotRepositoryException("Failed to delete spot", e)
+            throw SpotRepositoryException("Failed to delete spot--> $e", e.cause)
         }
     }
 
@@ -47,7 +47,7 @@ class SpotRepository(
             val dataSnapshot = spotsRef.child(spotId.toString()).get().await()
             dataSnapshot.getValue(Spot::class.java)
         } catch (e: Exception) {
-            throw SpotRepositoryException("Failed to get spot by id", e)
+            throw SpotRepositoryException("Failed to get spot by id--> $e", e.cause)
         }
     }
 
@@ -61,7 +61,7 @@ class SpotRepository(
                 emptyList()
             }
         } catch (e: Exception) {
-            throw SpotRepositoryException("Failed to get spots for user", e)
+            throw SpotRepositoryException("Failed to get spots for user--> $e", e.cause)
         }
     }
 

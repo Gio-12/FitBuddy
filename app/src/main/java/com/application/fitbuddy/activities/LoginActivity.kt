@@ -77,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 },
                 onFailure = { errorMessage ->
-                    Log.d(tag, "Error logging in: $errorMessage")
+                    showError(errorMessage)
                 }
             )
         }
@@ -90,4 +90,9 @@ class LoginActivity : AppCompatActivity() {
             apply()
         }
     }
+
+    private fun showError(errorMessage: String) {
+        Log.e(tag, errorMessage)
+    }
+
 }

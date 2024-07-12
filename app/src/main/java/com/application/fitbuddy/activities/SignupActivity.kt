@@ -64,7 +64,7 @@ class SignupActivity : AppCompatActivity() {
                     }
                 },
                 onFailure = { errorMessage ->
-                    Log.d(tag, "Error checking username: $errorMessage")
+                    showError(errorMessage)
                 }
             )
         }
@@ -81,9 +81,14 @@ class SignupActivity : AppCompatActivity() {
                     finish()
                 },
                 onFailure = { errorMessage ->
-                    Log.d(tag, "Error registering user: $errorMessage")
+                    showError(errorMessage)
                 }
             )
         }
     }
+
+    private fun showError(errorMessage: String) {
+        Log.e(tag, errorMessage)
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.application.fitbuddy.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,8 +14,7 @@ import com.application.fitbuddy.R
 class FollowingAdapter(
     private val onProfileClick: (String) -> Unit,
     private val onUnfollowClick: (String) -> Unit
-) :
-    ListAdapter<String, FollowingAdapter.FollowingViewHolder>(FollowingDiffCallback()) {
+) : ListAdapter<String, FollowingAdapter.FollowingViewHolder>(FollowingDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FollowingViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -31,8 +31,7 @@ class FollowingAdapter(
         itemView: View,
         private val onProfileClick: (String) -> Unit,
         private val onUnfollowClick: (String) -> Unit
-    ) :
-        RecyclerView.ViewHolder(itemView) {
+    ) : RecyclerView.ViewHolder(itemView) {
         private val usernameTextView: TextView = itemView.findViewById(R.id.username_text_view)
         private val profileButton: Button = itemView.findViewById(R.id.profile_button)
         private val unfollowButton: Button = itemView.findViewById(R.id.unfollow_button)

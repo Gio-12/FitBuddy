@@ -24,4 +24,12 @@
         android:layout_height="wrap_content"
         android:text="@string/follow"
         android:onClick="onFollowButtonClick" />
+
+    <Button
+        android:id="@+id/unfollow_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/unfollow"
+        android:visibility="gone"
+        android:onClick="onUnfollowButtonClick" />
 </LinearLayout>

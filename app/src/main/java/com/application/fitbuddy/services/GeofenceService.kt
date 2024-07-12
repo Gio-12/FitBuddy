@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelStore
 import com.application.fitbuddy.R
 import com.application.fitbuddy.geofence.GeofenceReceiver
 import com.application.fitbuddy.repository.SpotRepository
+import com.application.fitbuddy.utils.GEOFENCE_DWELL_DELAY
 import com.application.fitbuddy.utils.KEY_USERNAME
 import com.application.fitbuddy.utils.SHARED_PREFS_NAME
 import com.application.fitbuddy.viewmodel.SpotViewModel
@@ -69,7 +70,7 @@ class GeofenceService : Service() {
     private fun startForegroundService() {
         val channelId = "GeofenceChannelId"
         val channelName = "Geofence Service Channel"
-        val importance = NotificationManager.IMPORTANCE_LOW
+        val importance = NotificationManager.IMPORTANCE_HIGH
 
         val channel = NotificationChannel(channelId, channelName, importance)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -86,16 +87,16 @@ class GeofenceService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(tag, "onStartCommand")
+//        monitorGeofences()
         return START_STICKY
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun monitorGeofences() {
-        Log.d(tag, "monitorGeofences")
-        val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-        val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
-
         GlobalScope.launch(Dispatchers.IO) {
+            Log.d(tag, "monitorGeofences")
+            val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+            val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
             viewModel.getSpotsForUser(username,
                 onSuccess = { spots ->
                     for (spot in spots) {
@@ -115,6 +116,7 @@ class GeofenceService : Service() {
             .setCircularRegion(spot.latitude, spot.longitude, 100f)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
+            .setLoiteringDelay(GEOFENCE_DWELL_DELAY)
             .build()
 
         val geofenceRequest = GeofencingRequest.Builder()
@@ -122,7 +124,10 @@ class GeofenceService : Service() {
             .addGeofence(geofence)
             .build()
 
-        val pendingIntent = getGeofencePendingIntent()
+        val intent = Intent(this, GeofenceReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -139,12 +144,12 @@ class GeofenceService : Service() {
         }
     }
 
-    private fun getGeofencePendingIntent(): PendingIntent {
-        val intent = Intent(this, GeofenceReceiver::class.java)
-        return PendingIntent.getBroadcast(
-            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-        )
-    }
+//    private fun getGeofencePendingIntent(): PendingIntent {
+//        val intent = Intent(this, GeofenceReceiver::class.java)
+//        return PendingIntent.getBroadcast(
+//            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+//        )
+//    }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null

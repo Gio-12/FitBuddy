@@ -77,14 +77,14 @@ class GeofenceReceiver : BroadcastReceiver() {
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun saveSpotLog(context: Context, spotId: Int, transitionType: Int) {
-        GlobalScope.launch(Dispatchers.Main) {
+        GlobalScope.launch(Dispatchers.IO) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 val spotLogDao = FitBuddyDatabase.getDatabase(context).spotLogDao()
                 val entry = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
                 val spotLog = SpotLog(spotId = spotId, date = System.currentTimeMillis(), entry = entry)
                 try {
                     spotLogDao.insert(spotLog)
-                    withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.IO) {
                         Log.d("GeofenceReceiver", "SpotLog recorded: $spotLog")
                     }
                 } catch (e: Exception) {

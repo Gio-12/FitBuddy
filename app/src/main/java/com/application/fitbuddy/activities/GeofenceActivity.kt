@@ -145,7 +145,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
             .build()
 
         val geofenceRequest = GeofencingRequest.Builder()
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
             .addGeofence(geofence)
             .build()
 

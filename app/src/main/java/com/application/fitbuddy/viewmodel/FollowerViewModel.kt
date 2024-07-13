@@ -1,5 +1,7 @@
 package com.application.fitbuddy.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.application.fitbuddy.models.Follower
@@ -13,11 +15,18 @@ import javax.inject.Inject
 @HiltViewModel
 class FollowerViewModel @Inject constructor(private val repository: FollowerRepository) : ViewModel() {
 
+    private val _followingList = MutableLiveData<List<String>>()
+    val followingList: LiveData<List<String>> get() = _followingList
+
+    private val _followingCount = MutableLiveData<Int>()
+    val followingCount: LiveData<Int> get() = _followingCount
+
     suspend fun insert(follower: Follower, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         withContext(Dispatchers.IO) {
             try {
                 repository.insert(follower)
                 onSuccess()
+                updateFollowingListAndCount(follower.followerFK)
             } catch (e: Exception) {
                 onFailure(e.message ?: "Failed to insert follower")
             }
@@ -56,8 +65,21 @@ class FollowerViewModel @Inject constructor(private val repository: FollowerRepo
             try {
                 repository.removeFollowing(userFK, followerFK)
                 onSuccess()
+                updateFollowingListAndCount(followerFK)
             } catch (e: Exception) {
                 onFailure(e.message ?: "Failed to remove following")
+            }
+        }
+    }
+
+    fun updateFollowingListAndCount(followerFK: String) {
+        viewModelScope.launch {
+            try {
+                val followers = repository.getFollowingForUser(followerFK)
+                _followingList.postValue(followers)
+                _followingCount.postValue(followers.size)
+            } catch (e: Exception) {
+                // handle error
             }
         }
     }

@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -95,6 +96,14 @@ class FollowersActivity : MenuActivity() {
             loadFollowing(username)
         }
 
+        followerViewModel.followingList.observe(this, Observer { followingList ->
+            followingAdapter.submitList(followingList)
+        })
+
+        followerViewModel.followingCount.observe(this, Observer { followingCount ->
+            findViewById<TextView>(R.id.following_count).text = followingCount.toString()
+        })
+
         loadUserDetails(username)
     }
 
@@ -117,7 +126,7 @@ class FollowersActivity : MenuActivity() {
                 followerViewModel.getFollowingForUser(
                     username,
                     onSuccess = { following ->
-                        findViewById<TextView>(R.id.following_count).text = following.size.toString()
+                        followerViewModel.updateFollowingListAndCount(username)
                     },
                     onFailure = { errorMessage ->
                         showError(errorMessage)
@@ -196,8 +205,7 @@ class FollowersActivity : MenuActivity() {
             followerViewModel.insert(
                 follower,
                 onSuccess = {
-                    loadFollowing(username)
-                    updateFollowerState(followerUsername, true)
+                    followerViewModel.updateFollowingListAndCount(username)
                 },
                 onFailure = { errorMessage ->
                     showError(errorMessage)
@@ -206,22 +214,12 @@ class FollowersActivity : MenuActivity() {
         }
     }
 
-    private fun updateFollowerState(followerUsername: String, isFollowed: Boolean) {
-        val followersList = followersAdapter.currentList.toMutableList()
-        val index = followersList.indexOf(followerUsername)
-        if (index != -1) {
-            followersList[index] = if (isFollowed) "Following" else "NotFollowing"
-            followersAdapter.submitList(followersList)
-        }
-    }
-
     private fun removeFollowing(followingUsername: String) {
         followerViewModel.removeFollowing(
             followingUsername,
             username,
             onSuccess = {
-                loadFollowing(username)
-                updateFollowerState(followingUsername, false)
+                followerViewModel.updateFollowingListAndCount(username)
             },
             onFailure = { errorMessage ->
                 showError(errorMessage)

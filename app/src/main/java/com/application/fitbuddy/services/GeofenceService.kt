@@ -65,12 +65,18 @@ class GeofenceService : Service() {
         monitorGeofences()
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(tag, "onStartCommand")
+//        monitorGeofences()
+        return START_STICKY
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("ForegroundServiceType")
     private fun startForegroundService() {
         val channelId = "GeofenceChannelId"
         val channelName = "Geofence Service Channel"
-        val importance = NotificationManager.IMPORTANCE_HIGH
+        val importance = NotificationManager.IMPORTANCE_LOW
 
         val channel = NotificationChannel(channelId, channelName, importance)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -83,12 +89,6 @@ class GeofenceService : Service() {
             .build()
 
         startForeground(1, notification)
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(tag, "onStartCommand")
-//        monitorGeofences()
-        return START_STICKY
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -116,7 +116,7 @@ class GeofenceService : Service() {
             .setCircularRegion(spot.latitude, spot.longitude, 100f)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
-            .setLoiteringDelay(GEOFENCE_DWELL_DELAY)
+//            .setLoiteringDelay(GEOFENCE_DWELL_DELAY)
             .build()
 
         val geofenceRequest = GeofencingRequest.Builder()
@@ -152,6 +152,6 @@ class GeofenceService : Service() {
         super.onDestroy()
         Log.d(tag, "onDestroy")
         stopForeground(true)
-        viewModelStore.clear()
+//        viewModelStore.clear()
     }
 }

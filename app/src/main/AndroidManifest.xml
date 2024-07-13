@@ -46,30 +46,15 @@
         <activity android:name="com.application.fitbuddy.activities.ProfileActivity" />
         <activity android:name="com.application.fitbuddy.activities.ChartActivity" />
         <activity android:name="com.application.fitbuddy.activities.SearchActivity" />
-
-        <receiver android:name="com.application.fitbuddy.geofence.GeofenceReceiver"
-            android:enabled="true" />
-
         <service
             android:name="com.application.fitbuddy.services.GeofenceService"
+            android:enabled="true"
             android:exported="false" />
-<!--        <service-->
-<!--            android:name="com.application.fitbuddy.services.GeofenceService"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="true"-->
-<!--            android:foregroundServiceType="location"-->
-<!--            tools:ignore="ExportedService" />-->
-<!--        <receiver-->
-<!--            android:name="com.application.fitbuddy.geofence.GeofenceReceiver"-->
-<!--            android:allowBackup="true"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="true"-->
-<!--            tools:ignore="ExportedReceiver">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="com.application.ACTION_RECEIVE_GEOFENCE" />-->
-<!--                <action android:name="com.google.android.gms.location.intent.action.GEOFENCE_TRANSITION"/>-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+        <receiver
+            android:name="com.application.fitbuddy.geofence.GeofenceReceiver"
+            android:allowBackup="true"
+            android:enabled="true"
+            android:exported="false" />
         <service
             android:name="com.application.fitbuddy.services.ActionService"
             android:exported="false" />

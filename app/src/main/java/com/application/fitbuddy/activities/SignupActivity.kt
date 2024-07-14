@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.application.fitbuddy.R
@@ -43,6 +44,7 @@ class SignupActivity : AppCompatActivity() {
                 signup(username, password)
             } else {
                 Log.e(tag, "Please enter username and password")
+                showAlert("Signup Error", "Please enter username and password")
             }
         }
 
@@ -59,12 +61,14 @@ class SignupActivity : AppCompatActivity() {
                 onSuccess = { checkUser ->
                     if (checkUser != null) {
                         Log.d(tag, "Username already taken: $username")
+                        showAlert("Signup Error", "Username already taken")
                     } else {
                         signupNewUser(username, password)
                     }
                 },
                 onFailure = { errorMessage ->
                     showError(errorMessage)
+                    showAlert("Signup Error", "An error occurred: $errorMessage")
                 }
             )
         }
@@ -82,6 +86,7 @@ class SignupActivity : AppCompatActivity() {
                 },
                 onFailure = { errorMessage ->
                     showError(errorMessage)
+                    showAlert("Signup Error", "An error occurred: $errorMessage")
                 }
             )
         }
@@ -91,4 +96,11 @@ class SignupActivity : AppCompatActivity() {
         Log.e(tag, errorMessage)
     }
 
+    private fun showAlert(title: String, message: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(title)
+        builder.setMessage(message)
+        builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        builder.create().show()
+    }
 }

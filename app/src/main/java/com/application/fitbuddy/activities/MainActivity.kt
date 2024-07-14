@@ -301,14 +301,9 @@ class MainActivity : MenuActivity() {
         }
     }
 
-//    private suspend fun saveActionToDatabaseRoomDB(action: Action): Long {
-//        return withContext(Dispatchers.IO) {
-//            actionViewModel.insert(action)
-//        }
-//    }
 
     private suspend fun saveAction(action: Action): Long {
-        var actionId: Long = -1 // Initialize with a default value
+        var actionId: Long = -1 // default value
 
         actionViewModel.insert(action,
             onSuccess = { id ->
@@ -316,11 +311,10 @@ class MainActivity : MenuActivity() {
                 Log.d(tag, "Action inserted successfully with ID: $actionId")
             },
             onFailure = { errorMessage ->
-                // Handle failure
                 showError(errorMessage)
             }
         )
-        return actionId // Return the actionId here
+        return actionId
     }
 
     private fun saveEndAction(actionId: Long, endTime: Long, steps: Int) {

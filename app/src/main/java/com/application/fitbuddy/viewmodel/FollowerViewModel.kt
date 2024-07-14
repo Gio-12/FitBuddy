@@ -79,7 +79,6 @@ class FollowerViewModel @Inject constructor(private val repository: FollowerRepo
                 _followingList.postValue(followers)
                 _followingCount.postValue(followers.size)
             } catch (e: Exception) {
-                // handle error
             }
         }
     }

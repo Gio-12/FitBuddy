@@ -21,7 +21,7 @@ class SpotLogsAdapter(private val spotLogs: List<SpotLog>) : RecyclerView.Adapte
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val spotLog = spotLogs[position]
-        holder.logText.text = spotLog.toString() // Customize this to show relevant spot log information
+        holder.logText.text = spotLog.toString()
     }
 
     override fun getItemCount(): Int {

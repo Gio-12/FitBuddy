@@ -100,7 +100,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         }
 
         setMapLongClick(map)
-        loadSavedGeofence() // Pass a flag to control re-registration
+        loadSavedGeofence()
     }
 
     private fun setMapLongClick(map: GoogleMap) {

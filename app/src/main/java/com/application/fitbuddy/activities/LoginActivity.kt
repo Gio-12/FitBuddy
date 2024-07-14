@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.application.fitbuddy.R
@@ -48,6 +49,7 @@ class LoginActivity : AppCompatActivity() {
                 login(username, password)
             } else {
                 Log.d(tag, "Empty username or password")
+                showAlert("Login Error", "Username or password cannot be empty")
             }
         }
 
@@ -74,10 +76,12 @@ class LoginActivity : AppCompatActivity() {
                         finish()
                     } else {
                         Log.d(tag, "Invalid username or password for username: $username")
+                        showAlert("Login Error", "Invalid username or password")
                     }
                 },
                 onFailure = { errorMessage ->
                     showError(errorMessage)
+                    showAlert("Login Error", "An error occurred: $errorMessage")
                 }
             )
         }
@@ -95,4 +99,11 @@ class LoginActivity : AppCompatActivity() {
         Log.e(tag, errorMessage)
     }
 
+    private fun showAlert(title: String, message: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(title)
+        builder.setMessage(message)
+        builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        builder.create().show()
+    }
 }

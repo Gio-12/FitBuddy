@@ -4,8 +4,8 @@ import android.app.Application
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.database
 import com.google.firebase.database.Logger.Level
+import com.google.firebase.database.database
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp

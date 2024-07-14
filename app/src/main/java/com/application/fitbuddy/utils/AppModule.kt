@@ -2,9 +2,17 @@ package com.application.fitbuddy.utils
 
 import android.content.Context
 import androidx.room.Room
-import com.application.fitbuddy.dao.*
+import com.application.fitbuddy.dao.ActionDao
+import com.application.fitbuddy.dao.FollowerDao
+import com.application.fitbuddy.dao.SpotDao
+import com.application.fitbuddy.dao.SpotLogDao
+import com.application.fitbuddy.dao.UserDao
 import com.application.fitbuddy.db.FitBuddyDatabase
-import com.application.fitbuddy.repository.*
+import com.application.fitbuddy.repository.ActionRepository
+import com.application.fitbuddy.repository.FollowerRepository
+import com.application.fitbuddy.repository.SpotLogRepository
+import com.application.fitbuddy.repository.SpotRepository
+import com.application.fitbuddy.repository.UserRepository
 import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides

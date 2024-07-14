@@ -22,8 +22,10 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.github.mikephil.charting.components.XAxis
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -76,7 +78,6 @@ class ChartActivity : MenuActivity() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // Initially load data for the first time period (e.g., Day)
         updateCharts(timePeriodSpinner.selectedItem.toString())
     }
 
@@ -132,19 +133,32 @@ class ChartActivity : MenuActivity() {
             val calendar = Calendar.getInstance().apply { timeInMillis = action.startTime }
             calendar.get(Calendar.DAY_OF_YEAR)
         }.mapValues { entry ->
-            entry.value.sumBy { it.steps }.coerceAtLeast(0)
+            entry.value.sumBy { it.steps.coerceAtLeast(0) }
         }
 
         val entries = stepsMap.map { (day, steps) ->
             Entry(day.toFloat(), steps.toFloat())
-        }
+        }.sortedBy { it.x }
 
         val dataSet = LineDataSet(entries, "Daily Steps")
         dataSet.colors = ColorTemplate.COLORFUL_COLORS.asList()
+        dataSet.valueTextSize = 14f
 
-        val data = LineData(dataSet)
-        stepsLineChart.data = data
+        val lineData = LineData(dataSet)
+        stepsLineChart.data = lineData
         stepsLineChart.invalidate()
+
+        val xAxis = stepsLineChart.xAxis
+        xAxis.granularity = 1f
+        xAxis.valueFormatter = IndexAxisValueFormatter(entries.map { it.x.toInt().toString() })
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+
+        val yAxisLeft = stepsLineChart.axisLeft
+        yAxisLeft.axisMinimum = 0f
+
+        val yAxisRight = stepsLineChart.axisRight
+        yAxisRight.isEnabled = false
     }
 
     private fun updateTotals(actions: List<Action>) {

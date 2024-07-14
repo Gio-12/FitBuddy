@@ -33,5 +33,11 @@ data class Action(
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
+
+
+    override fun toString(): String {
+        return "'$userUsername', have been $actionType, with  $steps steps taken, started at ${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(startTime))}, ended ${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(endTime))})"
+    }
+
     constructor() : this("", "", 0, 0L, 0L)
 }

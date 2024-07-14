@@ -49,7 +49,6 @@ class GeofenceReceiver : BroadcastReceiver() {
                 for (geofence in triggeringGeofences) {
                     val spotId = geofence.requestId.toInt()
                     Log.d(tag, "Geofence transition detected: spotId: $spotId, transition type: $geofenceTransition")
-                    sendNotification(context, spotId, geofenceTransition)
                     saveSpotLog(context, spotId, geofenceTransition)
                 }
             } else {
@@ -61,22 +60,22 @@ class GeofenceReceiver : BroadcastReceiver() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun sendNotification(context: Context, spotId: Int, transitionType: Int) {
-        val transition = if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) "entered" else "exited"
+    private fun sendNotification(context: Context, spotLog: SpotLog) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = CHANNEL_ID
-        val title = "Geofence $transition"
+        val title = "Geofence Transition"
 
         val notification = Notification.Builder(context, channelId)
             .setContentTitle(title)
-            .setContentText("You have $transition geofence with location ID: $spotId")
+            .setContentText("$spotLog")
             .setSmallIcon(R.drawable.ic_alarm)
             .setAutoCancel(true)
             .build()
-        notificationManager.notify(spotId, notification)
+        notificationManager.notify(spotLog.spotId, notification)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(DelicateCoroutinesApi::class)
     private fun saveSpotLog(context: Context, spotId: Int, transitionType: Int) {
         GlobalScope.launch(Dispatchers.IO) {
@@ -88,6 +87,7 @@ class GeofenceReceiver : BroadcastReceiver() {
             val spotLog = SpotLog(spotId = spotId, date = System.currentTimeMillis(), entry = entry)
             try {
                 repository.insert(spotLog)
+                sendNotification(context, spotLog)
                 Log.d(tag, "SpotLog recorded: $spotLog")
             } catch (e: Exception) {
                 Log.e(tag, "Error inserting SpotLog: ${e.message}")

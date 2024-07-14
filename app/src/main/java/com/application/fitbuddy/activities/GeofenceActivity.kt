@@ -52,6 +52,12 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
     // VIEWMODELS
     private val spotViewModel: SpotViewModel by viewModels()
 
+    private val geofencePendingIntent: PendingIntent by lazy {
+        PendingIntent.getBroadcast(
+            this, 0, Intent(this, GeofenceReceiver::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +70,8 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         checkAndRequestPermissions()
+
+        clearGeofences()
     }
 
     private fun createNotificationChannel() {
@@ -146,13 +154,6 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
             .addGeofence(geofence)
             .build()
 
-        val geofencePendingIntent = PendingIntent.getBroadcast(
-            this,
-            0,
-            Intent(this, GeofenceReceiver::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-        )
-
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -216,6 +217,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
 
     override fun onPause() {
         super.onPause()
+        clearGeofences()
         Intent(this, GeofenceService::class.java).also { intent ->
             startService(intent)
         }
@@ -230,6 +232,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
 
     override fun onDestroy() {
         super.onDestroy()
+        clearGeofences()
         Intent(this, GeofenceService::class.java).also { intent ->
             stopService(intent)
         }
@@ -296,5 +299,17 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
 
     private fun showError(errorMessage: String) {
         Log.e(tag, errorMessage)
+    }
+
+    private fun clearGeofences() {
+        val geofencingClient = LocationServices.getGeofencingClient(this)
+        geofencingClient.removeGeofences(geofencePendingIntent).run {
+            addOnSuccessListener {
+                Log.d(tag, "Geofences removed")
+            }
+            addOnFailureListener {
+                Log.e(tag, "Failed to remove geofences: ${it.message}")
+            }
+        }
     }
 }

@@ -46,6 +46,12 @@ class GeofenceService : Service() {
     @Inject
     lateinit var repository: SpotRepository
 
+    private val geofencePendingIntent: PendingIntent by lazy {
+        PendingIntent.getBroadcast(
+            this, 0, Intent(this, GeofenceReceiver::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+    }
+
     private lateinit var geofencingClient: GeofencingClient
     private lateinit var viewModel: SpotViewModel
     private val viewModelStore = ViewModelStore()
@@ -90,10 +96,21 @@ class GeofenceService : Service() {
         startForeground(1, notification)
     }
 
+    private fun clearGeofences() {
+        geofencingClient.removeGeofences(geofencePendingIntent).run {
+            addOnSuccessListener {
+                Log.d(tag, "Geofences removed")
+            }
+            addOnFailureListener {
+                Log.e(tag, "Failed to remove geofences: ${it.message}")
+            }
+        }
+    }
     @OptIn(DelicateCoroutinesApi::class)
     private fun monitorGeofences() {
         GlobalScope.launch(Dispatchers.IO) {
             Log.d(tag, "monitorGeofences")
+            clearGeofences()
             val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
             val username = sharedPreferences.getString(KEY_USERNAME, "") ?: ""
             viewModel.getSpotsForUser(username,
@@ -154,4 +171,5 @@ class GeofenceService : Service() {
         val locationUpdateServiceIntent = Intent(this, LocationUpdateService::class.java)
         stopService(locationUpdateServiceIntent)
     }
+
 }

@@ -20,10 +20,9 @@ import androidx.core.app.NotificationCompat
 import com.application.fitbuddy.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.resume
 
 class ActionService : Service(), SensorEventListener {
 
@@ -45,6 +44,8 @@ class ActionService : Service(), SensorEventListener {
         sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
     }
 
+    private val sensorEventChannel = Channel<Unit>(capacity = Channel.CONFLATED)
+
     inner class LocalBinder : Binder() {
         fun getService(): ActionService = this@ActionService
     }
@@ -64,6 +65,7 @@ class ActionService : Service(), SensorEventListener {
         return binder
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val selectedActivityType = intent?.getStringExtra("selectedActionType") ?: "WALKING"
 
@@ -96,31 +98,29 @@ class ActionService : Service(), SensorEventListener {
 
     private suspend fun trackSteps() {
         withContext(Dispatchers.Main) {
-            suspendCancellableCoroutine<Unit> { continuation ->
-                Log.d(tag, "Registering sensor listener...")
+            Log.d(tag, "Registering sensor listener...")
 
-                val listener = object : SensorEventListener {
-                    override fun onSensorChanged(event: SensorEvent?) {
-                        event?.let {
-                            val stepsSinceLastReboot = it.values[0].toInt()
-                            if (initialSteps == -1) {
-                                initialSteps = stepsSinceLastReboot
-                            }
-                            currentSteps = stepsSinceLastReboot - initialSteps
-                            Log.d(tag, "Steps in session: $currentSteps")
-                            continuation.resume(Unit)
+            val listener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    event?.let {
+                        val stepsSinceLastReboot = it.values[0].toInt()
+                        if (initialSteps == -1) {
+                            initialSteps = stepsSinceLastReboot
                         }
-                    }
-
-                    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                        Log.d(tag, "Accuracy changed to: $accuracy")
+                        currentSteps = stepsSinceLastReboot - initialSteps
+                        Log.d(tag, "Steps in session: $currentSteps")
+                        sensorEventChannel.trySend(Unit)
                     }
                 }
-                sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
-                continuation.invokeOnCancellation {
-                    sensorManager.unregisterListener(listener)
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                    Log.d(tag, "Accuracy changed to: $accuracy")
                 }
             }
+
+            sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+
+            sensorManager.unregisterListener(listener)
         }
     }
 

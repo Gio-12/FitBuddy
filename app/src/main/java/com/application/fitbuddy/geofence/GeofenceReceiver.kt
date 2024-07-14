@@ -1,11 +1,15 @@
 package com.application.fitbuddy.geofence
 
 import android.Manifest
+import android.app.Notification
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -14,6 +18,7 @@ import com.application.fitbuddy.R
 import com.application.fitbuddy.db.FitBuddyDatabase
 import com.application.fitbuddy.models.SpotLog
 import com.application.fitbuddy.repository.SpotLogRepository
+import com.application.fitbuddy.utils.CHANNEL_ID
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
@@ -23,24 +28,26 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.MainScope
 
 class GeofenceReceiver : BroadcastReceiver() {
 
     private lateinit var repository: SpotLogRepository
     private val tag = "GeofenceReceiver"
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("GeofenceReceiver", "onReceive called")
+        Log.d(tag, "onReceive called")
         val geofencingEvent = intent.let { GeofencingEvent.fromIntent(it) }
         if (geofencingEvent != null) {
             if (geofencingEvent.hasError()) {
                 val errorMessage = GeofenceStatusCodes.getStatusCodeString(geofencingEvent.errorCode)
-                Log.e("GeofenceReceiver", "Geofencing error: $errorMessage")
+                Log.e(tag, "Geofencing error: $errorMessage")
                 return
             }
-            Log.e(tag, "geofencingEvent != Null")
+            Log.d(tag, "geofencingEvent != Null")
         } else {
-            Log.w(tag, "geofencingEvent IS NULL")
+            Log.e(tag, "geofencingEvent IS NULL")
         }
 
         val geofenceTransition = geofencingEvent?.geofenceTransition
@@ -49,53 +56,49 @@ class GeofenceReceiver : BroadcastReceiver() {
             if (triggeringGeofences != null) {
                 for (geofence in triggeringGeofences) {
                     val spotId = geofence.requestId.toInt()
-                    Log.d("GeofenceReceiver", "Geofence transition detected: spotId: $spotId, transition type: $geofenceTransition")
+                    Log.d(tag, "Geofence transition detected: spotId: $spotId, transition type: $geofenceTransition")
                     sendNotification(context, spotId, geofenceTransition)
                     saveSpotLog(context, spotId, geofenceTransition)
                 }
             } else {
-                Log.w("GeofenceReceiver", "No triggering geofences found.")
+                Log.d(tag, "No triggering geofences found.")
             }
         } else {
-            Log.w("GeofenceReceiver", "Invalid transition type: $geofenceTransition")
+            Log.d(tag, "Invalid transition type: $geofenceTransition")
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun sendNotification(context: Context, spotId: Int, transitionType: Int) {
         val transition = if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) "entered" else "exited"
-        val notificationId = (System.currentTimeMillis() % 10000).toInt()
-        val builder = NotificationCompat.Builder(context, "GEOFENCE_CHANNEL_ID")
-            .setSmallIcon(R.drawable.ic_alarm)
-            .setContentTitle("Geofence Transition")
-            .setContentText("You have $transition geofence with location ID: $spotId")
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channelId = CHANNEL_ID
+        val title = "Geofence $transition"
 
-        val notificationManager = NotificationManagerCompat.from(context)
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            notificationManager.notify(notificationId, builder.build())
-        } else {
-            Log.e("GeofenceReceiver", "Notification permission not granted")
-        }
+        val notification = Notification.Builder(context, channelId)
+            .setContentTitle(title)
+            .setContentText("You have $transition geofence with location ID: $spotId")
+            .setSmallIcon(R.drawable.ic_alarm)
+            .setAutoCancel(true)
+            .build()
+        notificationManager.notify(spotId, notification)
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun saveSpotLog(context: Context, spotId: Int, transitionType: Int) {
         GlobalScope.launch(Dispatchers.IO) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                repository = SpotLogRepository(
-                    FitBuddyDatabase.getDatabase(context).spotLogDao(),
-                    FirebaseDatabase.getInstance()
-                )
-                val entry = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
-                val spotLog = SpotLog(spotId = spotId, date = System.currentTimeMillis(), entry = entry)
-                try {
-                    repository.insert(spotLog)
-                    Log.d("GeofenceReceiver", "SpotLog recorded: $spotLog")
-                } catch (e: Exception) {
-                    Log.e("GeofenceReceiver", "Error inserting SpotLog: ${e.message}")
-                }
-            } else {
-                Log.e("GeofenceReceiver", "Write permission not granted")
+            repository = SpotLogRepository(
+                FitBuddyDatabase.getDatabase(context).spotLogDao(),
+                FirebaseDatabase.getInstance()
+            )
+            val entry = transitionType == Geofence.GEOFENCE_TRANSITION_ENTER
+            val spotLog = SpotLog(spotId = spotId, date = System.currentTimeMillis(), entry = entry)
+            try {
+                repository.insert(spotLog)
+                Log.d(tag, "SpotLog recorded: $spotLog")
+            } catch (e: Exception) {
+                Log.e(tag, "Error inserting SpotLog: ${e.message}")
             }
         }
     }

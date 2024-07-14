@@ -13,8 +13,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SpotLogViewModel @Inject constructor(private val repository: SpotLogRepository) : ViewModel() {
 
-    suspend fun insert(spotLog: SpotLog, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        withContext(Dispatchers.IO) {
+    fun insert(spotLog: SpotLog, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.insert(spotLog)
                 onSuccess()

@@ -58,6 +58,14 @@
         <service
             android:name="com.application.fitbuddy.services.ActionService"
             android:exported="false" />
+        <service
+            android:name=".services.LocationUpdateService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.application.fitbuddy.action.LOCATION_UPDATE_SERVICE" />
+            </intent-filter>
+        </service>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_map_api_key" />

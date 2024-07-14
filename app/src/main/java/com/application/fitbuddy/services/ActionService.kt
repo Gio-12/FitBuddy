@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -26,16 +27,23 @@ import kotlin.coroutines.resume
 
 class ActionService : Service(), SensorEventListener {
 
-    var tag = "ActionService"
-
+    private val tag = "ActionService"
     private val binder = LocalBinder()
     private lateinit var notificationManager: NotificationManager
-    private var steps: Int = 0
+    private var initialSteps: Int = -1
+    private var currentSteps: Int = 0
+
+    private val sharedPreferences: SharedPreferences by lazy {
+        getSharedPreferences("action_service_prefs", Context.MODE_PRIVATE)
+    }
 
     private val sensorManager by lazy {
-        getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+        getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    }
+
     private val sensor: Sensor? by lazy {
-        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) }
+        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+    }
 
     inner class LocalBinder : Binder() {
         fun getService(): ActionService = this@ActionService
@@ -45,8 +53,9 @@ class ActionService : Service(), SensorEventListener {
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        initialSteps = sharedPreferences.getInt("initial_steps", -1)
         if (sensor == null) {
-            Log.e(tag,"Step counter sensor is not present on this device")
+            Log.e(tag, "Step counter sensor is not present on this device")
         }
         createNotificationChannel()
     }
@@ -71,6 +80,7 @@ class ActionService : Service(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
+        sharedPreferences.edit().putInt("initial_steps", initialSteps).apply()
     }
 
     @SuppressLint("ForegroundServiceType")
@@ -84,18 +94,20 @@ class ActionService : Service(), SensorEventListener {
         startForeground(1, notification)
     }
 
-
     private suspend fun trackSteps() {
         withContext(Dispatchers.Main) {
-            suspendCancellableCoroutine { continuation ->
-                Log.d(tag, "Registering sensor listener... ")
+            suspendCancellableCoroutine<Unit> { continuation ->
+                Log.d(tag, "Registering sensor listener...")
 
                 val listener = object : SensorEventListener {
                     override fun onSensorChanged(event: SensorEvent?) {
                         event?.let {
                             val stepsSinceLastReboot = it.values[0].toInt()
-                            Log.d(tag, "Steps since last reboot: $stepsSinceLastReboot")
-                            steps = stepsSinceLastReboot
+                            if (initialSteps == -1) {
+                                initialSteps = stepsSinceLastReboot
+                            }
+                            currentSteps = stepsSinceLastReboot - initialSteps
+                            Log.d(tag, "Steps in session: $currentSteps")
                             continuation.resume(Unit)
                         }
                     }
@@ -117,7 +129,7 @@ class ActionService : Service(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     fun getStepCount(): Int {
-        return steps
+        return currentSteps
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

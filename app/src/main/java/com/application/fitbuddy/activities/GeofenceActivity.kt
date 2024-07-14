@@ -20,8 +20,8 @@ import com.application.fitbuddy.R
 import com.application.fitbuddy.geofence.GeofenceReceiver
 import com.application.fitbuddy.models.Spot
 import com.application.fitbuddy.services.GeofenceService
+import com.application.fitbuddy.utils.CHANNEL_ID
 import com.application.fitbuddy.utils.GEOFENCE_DWELL_DELAY
-import com.application.fitbuddy.utils.GEOFENCE_EXPIRATION
 import com.application.fitbuddy.utils.GEOFENCE_RADIUS
 import com.application.fitbuddy.utils.KEY_USERNAME
 import com.application.fitbuddy.utils.LOCATION_REQUEST_CODE
@@ -29,6 +29,7 @@ import com.application.fitbuddy.utils.SHARED_PREFS_NAME
 import com.application.fitbuddy.utils.WRITE_EXTERNAL_STORAGE_REQUEST_CODE
 import com.application.fitbuddy.viewmodel.SpotViewModel
 import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.Geofence.NEVER_EXPIRE
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -65,15 +66,11 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         checkAndRequestPermissions()
     }
 
-    companion object {
-        const val CHANNEL_ID = "GEOFENCE_CHANNEL_ID"
-    }
-
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_HIGH
+            val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
@@ -95,7 +92,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         }
 
         setMapLongClick(map)
-        loadSavedGeofence()
+        loadSavedGeofence() // Pass a flag to control re-registration
     }
 
     private fun setMapLongClick(map: GoogleMap) {
@@ -139,7 +136,7 @@ class GeofenceActivity : MenuActivity(), OnMapReadyCallback {
         val geofence = Geofence.Builder()
             .setRequestId(locationId.toString())
             .setCircularRegion(latLng.latitude, latLng.longitude, GEOFENCE_RADIUS)
-            .setExpirationDuration(GEOFENCE_EXPIRATION)
+            .setExpirationDuration(NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
             .setLoiteringDelay(GEOFENCE_DWELL_DELAY)
             .build()

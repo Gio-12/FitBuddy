@@ -20,7 +20,7 @@ import androidx.lifecycle.ViewModelStore
 import com.application.fitbuddy.R
 import com.application.fitbuddy.geofence.GeofenceReceiver
 import com.application.fitbuddy.repository.SpotRepository
-import com.application.fitbuddy.utils.GEOFENCE_DWELL_DELAY
+import com.application.fitbuddy.utils.GEOFENCE_RADIUS
 import com.application.fitbuddy.utils.KEY_USERNAME
 import com.application.fitbuddy.utils.SHARED_PREFS_NAME
 import com.application.fitbuddy.viewmodel.SpotViewModel
@@ -50,24 +50,23 @@ class GeofenceService : Service() {
     private lateinit var viewModel: SpotViewModel
     private val viewModelStore = ViewModelStore()
 
-
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
         Log.d(tag, "onCreate")
-
         geofencingClient = LocationServices.getGeofencingClient(this)
 
-        val factory = SpotViewModelFactory(repository)
-        viewModel = ViewModelProvider(viewModelStore, factory)[SpotViewModel::class.java]
-
-        startForegroundService()
-        monitorGeofences()
+        // Start LocationUpdateService
+        val locationUpdateServiceIntent = Intent(this, LocationUpdateService::class.java)
+        ContextCompat.startForegroundService(this, locationUpdateServiceIntent)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(tag, "onStartCommand")
-//        monitorGeofences()
+        val factory = SpotViewModelFactory(repository)
+        viewModel = ViewModelProvider(viewModelStore, factory)[SpotViewModel::class.java]
+        startForegroundService()
+        monitorGeofences()
         return START_STICKY
     }
 
@@ -113,14 +112,13 @@ class GeofenceService : Service() {
     private fun createGeofence(spotId: Int, spot: LatLng) {
         val geofence = Geofence.Builder()
             .setRequestId(spotId.toString())
-            .setCircularRegion(spot.latitude, spot.longitude, 100f)
+            .setCircularRegion(spot.latitude, spot.longitude, GEOFENCE_RADIUS)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
-//            .setLoiteringDelay(GEOFENCE_DWELL_DELAY)
             .build()
 
         val geofenceRequest = GeofencingRequest.Builder()
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER or GeofencingRequest.INITIAL_TRIGGER_EXIT)
             .addGeofence(geofence)
             .build()
 
@@ -152,6 +150,8 @@ class GeofenceService : Service() {
         super.onDestroy()
         Log.d(tag, "onDestroy")
         stopForeground(true)
-//        viewModelStore.clear()
+        // Stop LocationUpdateService
+        val locationUpdateServiceIntent = Intent(this, LocationUpdateService::class.java)
+        stopService(locationUpdateServiceIntent)
     }
 }

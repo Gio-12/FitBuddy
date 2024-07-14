@@ -49,11 +49,13 @@ class FollowersAdapter(
                 }
             }
             followButton.setOnClickListener {
+                followButton.visibility = View.INVISIBLE
                 currentFollowerUsername?.let { followerUsername ->
                     onFollowClick(followerUsername)
                 }
             }
             unfollowButton.setOnClickListener {
+                unfollowButton.visibility = View.INVISIBLE
                 currentFollowerUsername?.let { followerUsername ->
                     onUnfollowClick(followerUsername)
                 }

@@ -55,8 +55,9 @@ class SpotLogRepository(
         return try {
             val spotLogsSnapshot = spotLogsRef.get().await()
             if (spotLogsSnapshot.exists() && spotLogsSnapshot.hasChildren()) {
-                val query = spotLogsRef.orderByChild("spotId").equalTo(spotId.toString()).get().await()
+                val query = spotLogsRef.get().await()
                 query.children.mapNotNull { it.getValue(SpotLog::class.java) }
+                    .filter { it.spotId == spotId }
             } else {
                 emptyList()
             }

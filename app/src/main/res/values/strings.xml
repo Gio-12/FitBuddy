@@ -1,7 +1,6 @@
 <resources>
 <!--    MapAPI Key-->
-<!--    <string name="google_map_api_key" translatable="false">AIzaSyD1kNCQ3YXIlcoulGoBITB7rjiJCw0OLBQ</string>-->
-    <string name="google_map_api_key" translatable="false">AIzaSyANPtKILkEqdWrS1EipqR9VDjK4j6mybZM</string>
+    <string name="google_map_api_key" translatable="false"></string>
     <string name="app_name">FitBuddy</string>
     <string name="logout">Logout</string>
     <string name="home">Home</string>
